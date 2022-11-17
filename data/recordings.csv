@@ -1,0 +1,47 @@
+id,year,start_date,end_date,country,city,lon,lat,recordings,scouts,observations
+1,1903,,,Mexico,Mexico City,-99.133,19.432,,William H. Nafey,"This trip is mentioned by Paul D. Fischer based on his research on the Sooy brothers’ memoirs and other testimonies. Apparently, there are no surviving ledgers."
+2,1905,1905-07-17,1905-07-27,Mexico,Mexico City,-99.133,19.432,191,William H. Nafey and a Mr. “Rous”,"In 1905, Henry Hagen made an expedition to Cuba while working for the Zonophone Company—which Victor purchased in 1910. See: Harry Sooy’s Memoir (c.1925), 32, 44. In 1906, George Cheney went to China, also while working for Zonophone."
+3,1907,1907-03-04,1907-0-31,Cuba,Havana,-82.366,23.113,171,Harry Sooy,Several registers appear simply as March 1907. The mention to 171 recordings comes from H. Sooy (p.34)
+4,1907,1907-07-24,1907-07-24,Mexico,Mexico City,-99.133,19.432,207,Harry Sooy,Some registers appear simply as July 1907. The mention to 207 recordings comes from H. Sooy (p.36)
+5,1907-1908,1907-11-01,1907-11-22,Brazil,Rio de Janeiro,,,299,William H. Nafey,Most registers appear simply as either November 1907 or December 1907.
+,1907-1908,1907-12-21,1908-01-09,Argentina,Buenos Aires,,,299,William H. Nafey,Most registers appear simply as either November 1907 or December 1907.
+6,1908,October 12–November 9 [September 24–November 21],,Mexico,Mexico City,-99.133,19.432,118,Raymond Sooy,"114 recordings in R series, 3 in the O and S series that appear as from 1908, and 1 “unconfirmed” in the R series. In July 1908, W. Nafey went on a recording expedition to China, and the same year Henry Hagen went to Mexico (for Zonophone)."
+7,1909,"January 30–February 11
+[January 16–February 17]",,Cuba,Havana,-82.366,23.113,122,Raymond Sooy,120 recordings plus 2 “unconfirmed.”
+8,1910,February 24–April 6 [January 20–May 5],,Argentina,Buenos Aires,,,426,Raymond Sooy,"Three recordings are registers as having been made in Havana on February 6 and 7, but probably it was actually February 1909 or 1911. The mention to 424 recordings comes from Raymond Sooy’s Memoirs (c.1925)."
+9,1910,1910-11-05 ,1910-11-28,Mexico,Mexico City,-99.133,19.432,182,Raymond Sooy(?) Henry Hagen(?),
+10,1910-1911,"January 4– February 14
+[December 29–February 21]",,Cuba,Havana,-82.366,23.113,156,Henry Hagen and Charles Sooy,
+11,1911-1912,1911-11-20,1912-06-24,Argentina and Brazil,"-Buenos Aires (January 2– March 4)
+-Rio de Janeiro (April 18–May 27)
+",,,796,Henry Hagen and Charles Althouse,"Three of these recordings (matrixes H-701, H-702, and H-703) appear in DAHR as made in Buenos Aires but they that might be a mistake. Their date is a month after the last recording in Buenos Aires and on the same day than the first recordings in Rio, not to mention that the performer appears later on other recordings made in Rio during the same fieldtrip."
+12,1913,March 15–26 [March 1–April 2],,Cuba,Havana,-82.366,23.113,120,Harry Sooy and Frank Rambo,
+13,1913,1913-07-13,1913-12-11,Peru and Colombia,"-Lima 
+(September 5–25).
+-Bogotá (November 4–19)",,,322,Frank Rambo and Charles Althouse,
+14,1914,1914-06-20,1914-10-02,Cuba and Trinidad,"-Havana 
+(June 27–July 3)
+-Port of Spain (September 3–16)",,,182,George Cheney and Charles Althouse,"Includes matrix G-182 (Lionel Belasco playing Maple Leaf Rag). In 1915, Cheney and Althouse went on an expedition to China, Korea, and Japan. "
+15,1916,"October 17– November 15
+[c. October 10—November 21] ",,Cuba,Havana,,,186,George Cheney and Charles Althouse,
+16,1916-1917,1916-12-30,1917-02-15,Puerto Rico and Venezuela,"-San Juan (January 10-13)
+-Caracas (January 25–February 2)",,,118,George Cheney and Charles Althouse,
+17,1917,1917-03-03,1917-11-22,"Argentina, Chile, Bolivia, Peru, and Ecuador. ","-Buenos Aires (April 23–May 19)
+-Santiago 
+(June 14–28)
+-La Paz 
+(July 18–26)
+-Arequipa 
+(August 7–10)
+-Lima (August 22–September 16)
+-Guayaquil (October 5–31)",,,847,George Cheney and Charles Althouse,
+18,1918,"February 7-26
+[January 19–March 4] ",,Cuba,Havana,,,125,George Cheney and William Linderman,
+19,1919,May 7–June 13 [April 19–c. June 20] ,,Cuba,Havana,,,96,George Cheney and Charles Althouse,"It includes 18 recordings made by the Orquesta de Felipe Valdes, registered in DAHR as made in “Yucatan, Mexico [unconfirmed],” although I believe they were made most likely Havana as well.  "
+20,1920,May 31–June 14 [c. May 12–June 21],,Cuba,Havana,,,62,George Cheney and Charles Althouse,
+21,1921,March 7–19 [c. March 1-March 29],,Cuba,Havana,,,58,George Cheney,"The place of various recordings is marked as “Havana (unconfirmed),” as the information came from Cristobal Díaz Ayala and the ledgers seem to be lost. However, Cheney’s passport information seems to indicate that Havana was indeed the place. "
+22,1923,March 8–27 [February 24–April 3],,Cuba,Havana,,,55,George Cheney and Louis (or Lewis) Layton.,
+23,1924,March 21–April 17 [March 15-c. April 27],,Cuba,Havana,,,50,William Linderman and Edward J. Eckhardt,"In 1924 and 1925, Linderman also went on a recording expedition to China and what is today Vietnam, Cambodia, and Laos. "
+24,1925,1925-04-14,1925-04-18,Cuba,Havana,,,21,Unknown,
+25,1925,October 29– November 5 [c. October 20–November 10],,Cuba,Havana,,,29,Charles Althouse,"The place for these 29 recordings appears as “unconfirmed” in DAHR as no ledgers are available, but Althouse’s passport information indicate that he indeed made such an expedition."
+26,1926,1926-11-26,1926-12-16,Mexico,Mexico City,,,75,Unknown,"Between 1922 and 1928 Victor made 1650 recordings in Buenos Aires. These recordings were made in the studios set by the company in Argentina. Althouse, Cheney, and Layton contributed significantly to these recording endeavors. (See: Cañardo, Fábricas de música). Yet, “Buenos Aires” as the place for many of tehse recordings appears as “unconfirmed” in DAHR, considering that the original ledgers seem to be irremediably lost. Apparently, there were other recording expeditions to Havana in March 1927 and in January-February 1928, and to Santiago (Chile) in the “winter” of 1928."
