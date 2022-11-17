@@ -10,7 +10,7 @@ Promise.all(promises)
   })
   .catch((e) => {
     console.error(
-      `There has been a problem with your fetch operation: ${e.message}`
+      `There has been a problem with your data: ${e.message}`
     );
   });
 

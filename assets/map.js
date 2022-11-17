@@ -7,8 +7,8 @@ export default class HearingMap extends Visualization {
     this.projection = d3
       .geoMercator()
       .translate([this.width / 2, this.height / 2])
-      .center([-99.13, 19.43])
-      .scale(1000);
+      .center([-82.366, 23.113])
+      .scale(600);
     this.path = d3.geoPath().projection(this.projection);
   }
 
@@ -53,7 +53,7 @@ export default class HearingMap extends Visualization {
         .data(recordings)
         .enter()
         .append("circle")
-        // TODO: if the points overlap, jitter them
+        // TODO: if the points overlap (i.e., cx == cx), jitter them
         .attr("cx", (d) => this.projection([d.lon, d.lat])[0])
         .attr("cy", (d) => this.projection([d.lon, d.lat])[1])
         .attr("r", (d) => Math.sqrt(d.recordings))
