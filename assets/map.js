@@ -21,11 +21,27 @@ export default class HearingMap extends Visualization {
       .attr("fill", "#F0F0F4")
       .attr("stroke", "#000000")
       .attr("stroke-width", 0.5);
-
+    
+      this.viz
+      .append("path")
+      .datum(this.data.southamerica)
+      .attr("d", this.path)
+      .attr("fill", "#F0F0F4")
+      .attr("stroke", "#000000")
+      .attr("stroke-width", 0.5);
+    
     // Draw the map features
     this.viz
       .selectAll("path")
       .data(this.data.northamerica.features)
+      .enter()
+      .append("path")
+      .attr("d", this.path)
+      .attr("class", "country");
+    
+      this.viz
+      .selectAll("path")
+      .data(this.data.southamerica.features)
       .enter()
       .append("path")
       .attr("d", this.path)

@@ -1,6 +1,9 @@
 import HearingMap from "./map.js";
 
-const urls = ["https://data.chnm.org/ne/northamerica/"];
+const urls = [
+  "https://data.chnm.org/ne/northamerica/",
+  "https://data.chnm.org/ne/southamerica/",
+];
 const promises = [];
 urls.forEach((url) => promises.push(d3.json(url)));
 
@@ -17,7 +20,7 @@ Promise.all(promises)
 function setup(data) {
   const viz = new HearingMap(
     "#map",
-    { northamerica: data[0], },
+    { northamerica: data[0], southamerica: data[1] },
     { width: 1000, height: 525 },
     { top: 10, right: 10, bottom: 10, left: 10 }
   );
