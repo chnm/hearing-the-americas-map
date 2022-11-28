@@ -7,8 +7,8 @@ export default class HearingMap extends Visualization {
     this.projection = d3
       .geoMercator()
       .translate([this.width / 2, this.height / 2])
-      .center([-82.366, 6.113])
-      .scale(480);
+      .center([-80, -10])
+      .scale(400);
     this.path = d3.geoPath().projection(this.projection);
 
     this.kScale = 0.5;
@@ -188,27 +188,18 @@ export default class HearingMap extends Visualization {
       // Zoom to the country when clicked and adjust the stroke width of the circle.
       this.viz.selectAll("circle").on("click", (e, d) => this.zoom(e, d));
 
-      // If a user selects a scout from the dropdown, filter the data and update the map. If "All" is selected, reset the map.
+      // If a user selects a scout from the dropdown, filter the data and display those points where 
+      // a scout's name is attached to a recording location. If "All" is selected, display all points.
       d3.select("#scouts_selection").on("change", (e) => {
         const selectedScout = e.target.value;
         if (selectedScout === "All") {
-          this.viz
-            .selectAll("circle")
-            .transition()
-            .duration(750)
-            .attr("opacity", 1);
+          this.viz.selectAll("circle").style("display", "block");
         } else {
+          this.viz.selectAll("circle").style("display", "none");
           this.viz
             .selectAll("circle")
-            .transition()
-            .duration(750)
-            .attr("opacity", (d) => {
-              if (d.scouts === selectedScout) {
-                return 1;
-              } else {
-                return 0.1;
-              }
-            });
+            .filter((d) => d.scouts.map((s) => s.name).includes(selectedScout))
+            .style("display", "block");
         }
       });
 
