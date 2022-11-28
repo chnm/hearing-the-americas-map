@@ -8,8 +8,16 @@
 </head>
 <body>
 
-    <div class="map__dropdown_scouts"></div>
-    <div class="map__timeline"></div>
+    <div class="map__dropdown_scouts">
+        <select id="scouts" class="map__dropdown_scouts--select">
+            <option value="0">Select a Scout</option>
+            <option value="1">Scout 1</option>
+            <option value="2">Scout 2</option>
+        </select>
+    </div>
+    <div class="map__timeline_slider">
+        <input type="range" min="1910" max="1932" value="0" class="slider" id="timeline">
+    </div>
 
     <div class="map__display">
         <svg id="map" width="100%"></svg>

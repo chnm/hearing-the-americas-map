@@ -7,7 +7,7 @@ export default class HearingMap extends Visualization {
     this.projection = d3
       .geoMercator()
       .translate([this.width / 2, this.height / 2])
-      .center([-82.366, 23.113])
+      .center([-82.366, 6.113])
       .scale(400);
     this.path = d3.geoPath().projection(this.projection);
 
