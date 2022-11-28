@@ -8,16 +8,33 @@
 </head>
 <body>
 
-    <div class="map__dropdown_scouts">
-        <select id="scouts" class="map__dropdown_scouts--select">
-            <option value="0">Select a Scout</option>
-            <option value="1">Scout 1</option>
-            <option value="2">Scout 2</option>
-        </select>
+    <div class="map__dropdown_scouts" id="scouts-dropdown"></div>
+
+    <div class="timeline_container">
+    <div id="map__timeline_slider">
+    <label for="year-slider" id="year-range" class="timeline-label" style="font-size: 1.8rem;">1910-1932</label>
+    <label for="year-start" class="timeline-label float-left">1910</label>
+    <label for="year-end" class="timeline-label float-right">1932</label>
+    <input id="timeline"
+        type="range" 
+        min="1910" 
+        max="1932"
+        step="1" 
+        value="0"
+        oninput="document.getElementById('year-range').innerHTML = this.value;"
+        class="slider">
     </div>
-    <div class="map__timeline_slider">
+    <div class="flex justify-center rounded-lg text-lg mb-4" role="group">
+        <button id="play-timeline" type="button">Play</button>
+        <button id="reset-timeline" type="button">Reset</button>
+    </div>
+    </div>
+
+    <!-- <div id="map__timeline_slider">
+        <label>Year</label>
         <input type="range" min="1910" max="1932" value="0" class="slider" id="timeline">
-    </div>
+        <div class="map__timeline_value" id="map__timeline_value">1910</div>
+    </div> -->
 
     <div class="map__display">
         <svg id="map" width="100%"></svg>
