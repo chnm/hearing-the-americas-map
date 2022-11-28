@@ -164,7 +164,7 @@ export default class HearingMap extends Visualization {
         console.log(year);
       });
 
-      // Draw the circles
+      // Draw the circles and sort so smallest circles are on top
       this.viz
         .selectAll("circle")
         .data(recordings)
@@ -182,7 +182,8 @@ export default class HearingMap extends Visualization {
         )
         .attr("r", (d) => Math.sqrt(d.recordings / Math.PI))
         .classed("point", true)
-        .attr("stroke-width", 0.5);
+        .attr("stroke-width", 0.5)
+        .sort((a, b) => b.recordings - a.recordings);
 
       // Zoom to the country when clicked and adjust the stroke width of the circle.
       this.viz.selectAll("circle").on("click", (e, d) => this.zoom(e, d));
