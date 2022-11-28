@@ -15,8 +15,9 @@ export default class HearingMap extends Visualization {
     this.centered = null;
 
     this.jitter = 5;
-    this.timer = null;
 
+    // Keep track of components for the year slider
+    this.timer = null;
     this.playButton = document.getElementById("play-timeline");
     this.resetButton = document.getElementById("reset-timeline");
 
@@ -112,26 +113,37 @@ export default class HearingMap extends Visualization {
           country: d.country,
           lat: +d.lat,
           lon: +d.lon,
-          scouts: d.scouts,
+          // Scouts need to be separated from their delimiter (;)
+          scouts: d.scouts.split(";").map((s) => {
+            return {
+              name: s,
+            };
+          }),
           recordings: +d.recordings,
         };
       });
 
       // We create our array of scouts from recordings.csv to use in the dropdown.
       const scouts = [];
-      recordings.forEach((d) => {
-        scouts.push(d.scouts);
+      recordings.forEach((recording) => {
+        recording.scouts.forEach((scout) => {
+          if (!scouts.includes(scout.name)) {
+            scouts.push(scout.name);
+          }
+        });
       });
-      // We then separate scouts by delimiter, return a unique array of scouts, and sort.
-      const uniqueScouts = scouts
-        .join(";")
-        .split(";")
-        .filter((d, i, a) => a.indexOf(d) === i)
-        .sort();
-      // Trim white space from each scout name
-      const trimmedScouts = uniqueScouts.map((d) => d.trim());
+
+      // Trim the whitespace from the scout names.
+      scouts.forEach((scout, i) => {
+        scouts[i] = scout.trim();
+      });
+
+      // Return the unique values of the scouts array and sort alphabetically.
+      const filteredScouts = scouts.filter((scout, i) => scouts.indexOf(scout) === i);
+      filteredScouts.sort();
       // We then add the "All" option to the top of the array.
-      trimmedScouts.unshift("All");
+      filteredScouts.unshift("All");
+
 
       // Create a dropdown menu
       d3.select("#scouts-dropdown")
@@ -140,16 +152,8 @@ export default class HearingMap extends Visualization {
         .append("select")
         .attr("id", "scouts_selection")
         .selectAll("option")
-        .data(trimmedScouts)
+        .data(filteredScouts)
         .join("option")
-        .attr("value", (d) => d)
-        .text((d) => d);
-
-      d3.select("#map__dropdown_scouts--select")
-        .selectAll("option")
-        .data(trimmedScouts)
-        .enter()
-        .append("option")
         .attr("value", (d) => d)
         .text((d) => d);
 
@@ -182,6 +186,30 @@ export default class HearingMap extends Visualization {
 
       // Zoom to the country when clicked and adjust the stroke width of the circle.
       this.viz.selectAll("circle").on("click", (e, d) => this.zoom(e, d));
+
+      // If a user selects a scout from the dropdown, filter the data and update the map. If "All" is selected, reset the map.
+      d3.select("#scouts_selection").on("change", (e) => {
+        const selectedScout = e.target.value;
+        if (selectedScout === "All") {
+          this.viz
+            .selectAll("circle")
+            .transition()
+            .duration(750)
+            .attr("opacity", 1);
+        } else {
+          this.viz
+            .selectAll("circle")
+            .transition()
+            .duration(750)
+            .attr("opacity", (d) => {
+              if (d.scouts === selectedScout) {
+                return 1;
+              } else {
+                return 0.1;
+              }
+            });
+        }
+      });
 
       // If the reset button is pressed, reset to the timeline-label to 1910-1932
       this.resetButton.addEventListener("click", () => {
