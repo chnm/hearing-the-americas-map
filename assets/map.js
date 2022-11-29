@@ -290,6 +290,11 @@ export default class HearingMap extends Visualization {
       // updates the map to display the points for the selected year.
       d3.select("#play-timeline").on("click", () => {
         const playButton = d3.select("#play-timeline");
+        // Don't display the "no-data" message if the user is playing the timeline. If the "no-data" message is 
+        // present, remove it.
+        if (d3.select(".no-data").node()) {
+          d3.select(".no-data").remove();
+        }
         if (playButton.text() === "Play") {
           playButton.text("Pause");
           d3.select("#reset-timeline").attr("disabled", true);
@@ -297,11 +302,14 @@ export default class HearingMap extends Visualization {
             const slider = d3.select("#timeline");
             const currentYear = parseInt(slider.property("value"));
             const maxYear = parseInt(slider.property("max"));
+            // Display the current year in year-range 
+            d3.select("#year-range").text(currentYear);
             if (currentYear < maxYear) {
               slider.property("value", currentYear + 1);
               slider.dispatch("change");
             } else {
-              slider.property("value", 0);
+              // when the slider reaches the end, pause the slider at the end
+              slider.property("value", 1926);
               slider.dispatch("change");
             }
           }, 1000);
