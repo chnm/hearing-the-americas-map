@@ -58,6 +58,25 @@ export default class HearingMap extends Visualization {
         .duration(750)
         .attr("stroke-width", `${1 / this.kScale}px`);
     };
+
+    // The tooltip is conditional based on whether we're displaying
+    // All data or a single denomination.
+    this.tooltipRender = (e, d) => {
+      const formatTime = d3.timeFormat("%b %d, %Y");
+      const text = 
+        `<strong>${d.city}, ${d.country}</strong><br>
+        Period of scout visit: ${formatTime(new Date(d.start_date))} - ${formatTime(new Date(d.end_date))}<br>
+        Number of recordings: ${d.recordings}<br>
+        Scouts:` + // loop through the scouts object to display a list of names
+        Object.keys(d.scouts)
+          .map((key) => {
+            return `<br> - ${d.scouts[key].name}`;
+          })
+          .join("");
+      // Display recordings data
+      this.tooltip.html(text);
+      this.tooltip.style("visibility", "visible");
+    };
   }
 
   render() {
@@ -93,6 +112,15 @@ export default class HearingMap extends Visualization {
       .append("path")
       .attr("d", this.path)
       .attr("class", "country");
+
+    // Draw the tooltip
+    this.tooltip = d3
+      .select("body")
+      .append("div")
+      .attr("class", "tooltip")
+      .attr("id", "map-tooltip")
+      .style("position", "absolute")
+      .style("visibility", "hidden");
   }
 
   update() {
@@ -132,13 +160,10 @@ export default class HearingMap extends Visualization {
         scouts[i] = scout.trim();
       });
 
-      // find the min and max year
-      const minYear = d3.min(recordings, (d) => d.start_date);
-      const maxYear = d3.max(recordings, (d) => d.end_date);
-      console.log(minYear, maxYear);
-
       // Return the unique values of the scouts array and sort alphabetically.
-      const filteredScouts = scouts.filter((scout, i) => scouts.indexOf(scout) === i);
+      const filteredScouts = scouts.filter(
+        (scout, i) => scouts.indexOf(scout) === i
+      );
       filteredScouts.sort();
       // We then add the "All" option to the top of the array.
       filteredScouts.unshift("All");
@@ -156,13 +181,6 @@ export default class HearingMap extends Visualization {
         .join("option")
         .attr("value", (d) => d)
         .text((d) => d);
-
-      // Retrieve the value of the range slider
-      const slider = document.getElementById("timeline");
-      slider.addEventListener("change", () => {
-        const year = slider.valueAsNumber;
-        console.log(year);
-      });
 
       // Draw the circles and sort so smallest circles are on top
       this.viz
@@ -184,37 +202,36 @@ export default class HearingMap extends Visualization {
         .classed("point", true)
         .attr("stroke-width", 0.5)
         .sort((a, b) => b.recordings - a.recordings);
-      
-        this.viz 
+
+        // Display the tooltip on mouseover
+      this.viz
         .selectAll("circle:not(.legend)")
         .on("mouseover", this.tooltipRender)
-          .on("mousemove", () => {
-            // Show the tooltip to the right of the mouse, unless we are
-            // on the rightmost 25% of the browser.
-            if (event.clientX / this.width >= 0.75) {
-              this.tooltip
-                .style("top", `${event.pageY - 10}px`)
-                .style(
-                  "left",
-                  `${
-                    event.pageX -
-                    this.tooltip.node().getBoundingClientRect().width -
-                    10
-                  }px`
-                );
-            } else {
-              this.tooltip
-                .style("top", `${event.pageY - 10}px`)
-                .style("left", `${event.pageX + 10}px`);
-            }
-          })
-          .on("mouseout", () => this.tooltip.style("visibility", "hidden"))
-
+        .on("mousemove", () => {
+          // Show the tooltip to the right of the mouse, unless we are
+          // on the rightmost 25% of the browser.
+          if (event.clientX / this.width >= 0.75) {
+            this.tooltip
+              .style("top", `${event.pageY - 10}px`)
+              .style(
+                "left",
+                `${
+                  event.pageX -
+                  this.tooltip.node().getBoundingClientRect().width - 10
+                }px`
+              );
+          } else {
+            this.tooltip
+              .style("top", `${event.pageY - 10}px`)
+              .style("left", `${event.pageX + 10}px`);
+          }
+        })
+        .on("mouseout", () => this.tooltip.style("visibility", "hidden"));
 
       // Zoom to the country when clicked and adjust the stroke width of the circle.
-      this.viz.selectAll("circle").on("click", (e, d) => this.zoom(e, d));
+      this.viz.selectAll("circle:not(.legend)").on("click", (e, d) => this.zoom(e, d));
 
-      // If a user selects a scout from the dropdown, filter the data and display those points where 
+      // If a user selects a scout from the dropdown, filter the data and display those points where
       // a scout's name is attached to a recording location. If "All" is selected, display all points.
       d3.select("#scouts_selection").on("change", (e) => {
         const selectedScout = e.target.value;
@@ -230,14 +247,18 @@ export default class HearingMap extends Visualization {
       });
 
       // If a user changes the year slider, filter the data and display those points where
-      // the start date is less than or equal to the year selected. Otherwise, display all points. 
+      // the start date is less than or equal to the year selected. Otherwise, display all points.
       d3.select("#timeline").on("change", (e) => {
         const selectedYear = e.target.value;
         this.viz.selectAll("circle").style("display", "none");
         this.viz
           .selectAll("circle")
           // ensure that start_date is only the year
-          .filter((d) => d.start_date.split("-")[0] <= selectedYear && d.end_date.split("-")[0] >= selectedYear)
+          .filter(
+            (d) =>
+              d.start_date.split("-")[0] <= selectedYear &&
+              d.end_date.split("-")[0] >= selectedYear
+          )
           .style("display", "block");
       });
 
