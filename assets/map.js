@@ -93,13 +93,6 @@ export default class HearingMap extends Visualization {
       .append("path")
       .attr("d", this.path)
       .attr("class", "country");
-
-    this.viz
-      .append("rect")
-      .attr("class", "overlay")
-      .attr("width", this.width)
-      .attr("height", this.height)
-      .on("click", this.zoom);
   }
 
   update() {
@@ -111,6 +104,7 @@ export default class HearingMap extends Visualization {
           start_date: d.start_date,
           end_date: d.end_date,
           country: d.country,
+          city: d.city,
           lat: +d.lat,
           lon: +d.lon,
           // Scouts need to be separated from their delimiter (;)
@@ -138,12 +132,18 @@ export default class HearingMap extends Visualization {
         scouts[i] = scout.trim();
       });
 
+      // find the min and max year
+      const minYear = d3.min(recordings, (d) => d.start_date);
+      const maxYear = d3.max(recordings, (d) => d.end_date);
+      console.log(minYear, maxYear);
+
       // Return the unique values of the scouts array and sort alphabetically.
       const filteredScouts = scouts.filter((scout, i) => scouts.indexOf(scout) === i);
       filteredScouts.sort();
       // We then add the "All" option to the top of the array.
       filteredScouts.unshift("All");
-
+      console.log(filteredScouts);
+      console.log(recordings);
 
       // Create a dropdown menu
       d3.select("#scouts-dropdown")
@@ -184,6 +184,32 @@ export default class HearingMap extends Visualization {
         .classed("point", true)
         .attr("stroke-width", 0.5)
         .sort((a, b) => b.recordings - a.recordings);
+      
+        this.viz 
+        .selectAll("circle:not(.legend)")
+        .on("mouseover", this.tooltipRender)
+          .on("mousemove", () => {
+            // Show the tooltip to the right of the mouse, unless we are
+            // on the rightmost 25% of the browser.
+            if (event.clientX / this.width >= 0.75) {
+              this.tooltip
+                .style("top", `${event.pageY - 10}px`)
+                .style(
+                  "left",
+                  `${
+                    event.pageX -
+                    this.tooltip.node().getBoundingClientRect().width -
+                    10
+                  }px`
+                );
+            } else {
+              this.tooltip
+                .style("top", `${event.pageY - 10}px`)
+                .style("left", `${event.pageX + 10}px`);
+            }
+          })
+          .on("mouseout", () => this.tooltip.style("visibility", "hidden"))
+
 
       // Zoom to the country when clicked and adjust the stroke width of the circle.
       this.viz.selectAll("circle").on("click", (e, d) => this.zoom(e, d));
@@ -203,9 +229,24 @@ export default class HearingMap extends Visualization {
         }
       });
 
-      // If the reset button is pressed, reset to the timeline-label to 1910-1932
+      // If a user changes the year slider, filter the data and display those points where
+      // the start date is less than or equal to the year selected. Otherwise, display all points. 
+      d3.select("#timeline").on("change", (e) => {
+        const selectedYear = e.target.value;
+        this.viz.selectAll("circle").style("display", "none");
+        this.viz
+          .selectAll("circle")
+          // ensure that start_date is only the year
+          .filter((d) => d.start_date.split("-")[0] <= selectedYear && d.end_date.split("-")[0] >= selectedYear)
+          .style("display", "block");
+      });
+
+      // If the reset button is pressed, reset to the timeline-label, display all points, and reset the dropdown.
       this.resetButton.addEventListener("click", () => {
-        document.getElementById("year-range").innerHTML = "1910-1932";
+        document.getElementById("year-range").innerHTML = "1900-1926";
+        document.getElementById("timeline").value = 1900;
+        this.viz.selectAll("circle").style("display", "block");
+        document.getElementById("scouts_selection").value = "All";
       });
     });
   }

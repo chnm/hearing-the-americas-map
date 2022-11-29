@@ -1,52 +1,52 @@
 <!DOCTYPE html>
 <html>
-<head>
- <meta charset="utf-8">
- <title>Hearing the Americas</title>
- <link rel="stylesheet" href="./dist/main.css">
-
-</head>
-<body>
-
+  <head>
+    <meta charset="utf-8" />
+    <title>Hearing the Americas</title>
+    <link rel="stylesheet" href="./dist/main.css" />
+  </head>
+  <body>
     <div class="map__dropdown_scouts" id="scouts-dropdown"></div>
 
     <div class="timeline_container">
-    <div id="map__timeline_slider">
-    <label for="year-slider" id="year-range" class="timeline-label" style="font-size: 1.8rem;">1910-1932</label>
-    <label for="year-start" class="timeline-label float-left">1910</label>
-    <label for="year-end" class="timeline-label float-right">1932</label>
-    <input id="timeline"
-        type="range" 
-        min="1910" 
-        max="1932"
-        step="1" 
-        value="0"
-        oninput="document.getElementById('year-range').innerHTML = this.value;"
-        class="slider">
-    </div>
-    <div class="flex justify-center rounded-lg text-lg mb-4" role="group">
+      <div id="map__timeline_slider">
+        <label
+          for="year-slider"
+          id="year-range"
+          class="timeline-label"
+          style="font-size: 1.8rem"
+          >1900-1926</label
+        >
+        <label for="year-start" class="timeline-label float-left">1900</label>
+        <label for="year-end" class="timeline-label float-right">1926</label>
+        <input
+          id="timeline"
+          type="range"
+          min="1910"
+          max="1932"
+          step="1"
+          value="1910"
+          oninput="document.getElementById('year-range').innerHTML = this.value;"
+          class="slider"
+        />
+      </div>
+      <div class="flex justify-center rounded-lg text-lg mb-4" role="group">
         <button id="play-timeline" type="button">Play</button>
         <button id="reset-timeline" type="button">Reset</button>
+      </div>
     </div>
-    </div>
-
-    <!-- <div id="map__timeline_slider">
-        <label>Year</label>
-        <input type="range" min="1910" max="1932" value="0" class="slider" id="timeline">
-        <div class="map__timeline_value" id="map__timeline_value">1910</div>
-    </div> -->
 
     <div class="map__display">
-        <svg id="map" width="100%"></svg>
+      <svg id="map" width="100%"></svg>
     </div>
 
     <details class="map__how_to">
-        <summary class="map__how_to_summary">How to use this visualization</summary>
-        <div class="map__how_to_description">lorem ipsum</div>
+      <summary class="map__how_to_summary">
+        How to use this visualization
+      </summary>
+      <div class="map__how_to_description">lorem ipsum</div>
     </details>
 
-
     <script type="module" src="./dist/index.js"></script>
-
-</body>
+  </body>
 </html>
