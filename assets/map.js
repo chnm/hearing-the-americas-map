@@ -167,8 +167,6 @@ export default class HearingMap extends Visualization {
       filteredScouts.sort();
       // We then add the "All" option to the top of the array.
       filteredScouts.unshift("All");
-      console.log(filteredScouts);
-      console.log(recordings);
 
       // Create a dropdown menu
       d3.select("#scouts-dropdown")
