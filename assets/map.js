@@ -260,10 +260,63 @@ export default class HearingMap extends Visualization {
           .style("display", "block");
       });
 
+      // If the user selects a year without any points to display, print a message
+      // on the map for the user to see.
+      d3.select("#timeline").on("input", (e) => {
+        const selectedYear = e.target.value;
+        // Check if the data is empty 
+        if (
+          this.viz
+            .selectAll("circle:not(.legend)")
+            .filter(
+              (d) =>
+                d.start_date.split("-")[0] <= selectedYear &&
+                d.end_date.split("-")[0] >= selectedYear
+            ).empty()
+        ) {
+          this.viz
+            .append("text")
+            .attr("class", "no-data")
+            .attr("x", this.width / 2)
+            .attr("y", this.height / 2)
+            .attr("text-anchor", "middle")
+            .text("No data available for this year");
+        } else {
+          d3.select(".no-data").remove();
+        }
+      });
+
+      // If the user presses the play button, advance the year slider by one year every second. This also
+      // updates the map to display the points for the selected year.
+      d3.select("#play-timeline").on("click", () => {
+        const playButton = d3.select("#play-timeline");
+        if (playButton.text() === "Play") {
+          playButton.text("Pause");
+          d3.select("#reset-timeline").attr("disabled", true);
+          this.animation = setInterval(() => {
+            const slider = d3.select("#timeline");
+            const currentYear = parseInt(slider.property("value"));
+            const maxYear = parseInt(slider.property("max"));
+            if (currentYear < maxYear) {
+              slider.property("value", currentYear + 1);
+              slider.dispatch("change");
+            } else {
+              slider.property("value", 0);
+              slider.dispatch("change");
+            }
+          }, 1000);
+        }
+        else {
+          playButton.text("Play");
+          d3.select("#reset-timeline").attr("disabled", null);
+          clearInterval(this.animation);
+        }
+      });
+
       // If the reset button is pressed, reset to the timeline-label, display all points, and reset the dropdown.
       this.resetButton.addEventListener("click", () => {
-        document.getElementById("year-range").innerHTML = "1900-1926";
-        document.getElementById("timeline").value = 1900;
+        document.getElementById("year-range").innerHTML = "1903-1926";
+        document.getElementById("timeline").value = 1903;
         this.viz.selectAll("circle").style("display", "block");
         document.getElementById("scouts_selection").value = "All";
       });
