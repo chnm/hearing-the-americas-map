@@ -1,88 +1,65 @@
 body {
-    font-family: -apple-system, BlinkMacSystemFont, "avenir next", avenir, helvetica, "helvetica neue", ubuntu, roboto, noto, "segoe ui", arial, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "avenir next", avenir,
+    helvetica, "helvetica neue", ubuntu, roboto, noto, "segoe ui", arial,
+    sans-serif;
 }
 
 label {
-    display: block;
-    margin-bottom: 0.5rem;
+  display: block;
+  margin-bottom: 0.5rem;
 }
 
 #map {
-    background: #ffffff;
+  background: #ffffff;
 }
 
 .country {
-    fill: transparent;
-    stroke: #41464C;
+  fill: transparent;
+  stroke: #41464c;
 }
 
 .states {
-    fill: transparent;
-    stroke: #41464C;
+  fill: transparent;
+  stroke: #41464c;
 }
 
 .point {
-    fill: #F2AC29;
-    fill-opacity: 0.5;
-    stroke: black;
+  fill: #f2ac29;
+  fill-opacity: 0.5;
+  stroke: black;
 }
 
 .tooltip {
-    background: rgba(101, 104, 109, 0.9);
-    border-radius: .2rem;
-    color: #fff;
-    display: inline-block;
-    font-size: 12px;
-    max-width: 400px;
-    padding: .2rem .4rem;
-    position: absolute;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    z-index: 300;
-    visibility: hidden;
-    }
+  background: rgba(101, 104, 109, 0.9);
+  border-radius: 0.2rem;
+  color: #fff;
+  display: inline-block;
+  font-size: 12px;
+  max-width: 400px;
+  padding: 0.2rem 0.4rem;
+  position: absolute;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  z-index: 300;
+  visibility: hidden;
+}
 
 .overlay {
-    fill: none;
-    pointer-events: all;
+  fill: none;
+  pointer-events: all;
 }
 
 .timeline_container {
-    width: 40%;
+  width: 40%;
 }
 
 .float-left {
-    float: left!important;
-  }
-  .float-right {
-    float: right!important;
-  }
-  
-  .slider {
-    /* -webkit-appearance: none;
-    appearance: none; */
-    width: 100%;
-    /* height: 8px; */
-    /* background: #d3d3d3; */
-    /* outline: none; */
-    /* opacity: 0.7;
-    -webkit-transition: .2s; 
-    transition: opacity .2s; */
-  }
+  float: left !important;
+}
+.float-right {
+  float: right !important;
+}
 
-
-  /* .slider:hover {
-    opacity: 1; 
-  }
-  
-  .slider::-webkit-slider-thumb {
-    -webkit-appearance: none; 
-    appearance: none;
-    background: #F2AC29;
-    cursor: pointer;
-  }
-  
-  .slider::-moz-range-thumb {
-    background: #F2AC29; 
-    cursor: pointer;
-  }  */
+.slider {
+  width: 100%;
+}
