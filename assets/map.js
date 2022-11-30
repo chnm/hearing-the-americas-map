@@ -229,20 +229,29 @@ export default class HearingMap extends Visualization {
       // Zoom to the country when clicked and adjust the stroke width of the circle.
       this.viz.selectAll("circle:not(.legend)").on("click", (e, d) => this.zoom(e, d));
 
-      // If a user selects a scout from the dropdown, filter the data and display those points where
-      // a scout's name is attached to a recording location. If "All" is selected, display all points.
+      // If a user selects a scout from the dropdown, filter the recordings to the selected scout, inclding
+      // single and multiple scouts.
       d3.select("#scouts_selection").on("change", (e) => {
         const selectedScout = e.target.value;
         if (selectedScout === "All") {
           this.viz.selectAll("circle").style("display", "block");
         } else {
-          this.viz.selectAll("circle").style("display", "none");
           this.viz
             .selectAll("circle")
-            .filter((d) => d.scouts.map((s) => s.name).includes(selectedScout))
+            .style("display", "none")
+            .filter((d) => {
+              // We need to check if the scout is in the array of scouts for each recording. If it is, we
+              // return the recording.
+              for (let i = 0; i < d.scouts.length; i++) {
+                if (d.scouts[i].name.trim() === selectedScout) {
+                  return d;
+                }
+              }
+            })
             .style("display", "block");
         }
       });
+
 
       // If a user changes the year slider, filter the data and display those points where
       // the start date is less than or equal to the year selected. Otherwise, display all points.
