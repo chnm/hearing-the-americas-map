@@ -15,6 +15,7 @@ export default class HearingMap extends Visualization {
     this.centered = null;
 
     this.jitter = 5;
+    this.maxRadius = 10;
 
     // Keep track of components for the year slider
     this.timer = null;
@@ -63,9 +64,11 @@ export default class HearingMap extends Visualization {
     // All data or a single denomination.
     this.tooltipRender = (e, d) => {
       const formatTime = d3.timeFormat("%b %d, %Y");
-      const text = 
+      const text =
         `<strong>${d.city}, ${d.country}</strong><br>
-        Period of scout visit: ${formatTime(new Date(d.start_date))} - ${formatTime(new Date(d.end_date))}<br>
+        Period of scout visit: ${formatTime(
+          new Date(d.start_date)
+        )} - ${formatTime(new Date(d.end_date))}<br>
         Number of recordings: ${d.recordings}<br>
         Scouts:` + // loop through the scouts object to display a list of names
         Object.keys(d.scouts)
@@ -126,6 +129,11 @@ export default class HearingMap extends Visualization {
   update() {
     // Read the CSV data
     d3.csv("data/recordings.csv").then((data) => {
+      this.radius = d3
+        .scaleSqrt()
+        .domain([0, d3.max(data, (d) => d.recordings)])
+        .range([0, this.maxRadius]);
+    
       // Create a new array of objects
       const recordings = data.map((d) => {
         return {
@@ -180,6 +188,22 @@ export default class HearingMap extends Visualization {
         .attr("value", (d) => d)
         .text((d) => d);
 
+        // Sum the number of recordings for each city and country; keep the lat/lon associated
+        // with a city. TODO: We may use this as a toggled option in the future.
+        const totalrecordings = {};
+        recordings.forEach((recording) => {
+          const key = `${recording.city}, ${recording.country}`;
+          if (totalrecordings[key]) {
+            totalrecordings[key].recordings += recording.recordings;
+          } else {
+            totalrecordings[key] = {
+              recordings: recording.recordings,
+              lat: recording.lat,
+              lon: recording.lon,
+            };
+          }
+        });
+
       // Draw the circles and sort so smallest circles are on top
       this.viz
         .selectAll("circle")
@@ -196,12 +220,12 @@ export default class HearingMap extends Visualization {
           (d) =>
             this.projection([d.lon, d.lat])[1] - Math.random() * this.jitter
         )
-        .attr("r", (d) => Math.sqrt(d.recordings / Math.PI))
+        .attr("r", (d) => this.radius(d.recordings))
         .classed("point", true)
         .attr("stroke-width", 0.5)
         .sort((a, b) => b.recordings - a.recordings);
 
-        // Display the tooltip on mouseover
+      // Display the tooltip on mouseover
       this.viz
         .selectAll("circle:not(.legend)")
         .on("mouseover", this.tooltipRender)
@@ -215,7 +239,8 @@ export default class HearingMap extends Visualization {
                 "left",
                 `${
                   event.pageX -
-                  this.tooltip.node().getBoundingClientRect().width - 10
+                  this.tooltip.node().getBoundingClientRect().width -
+                  10
                 }px`
               );
           } else {
@@ -227,7 +252,39 @@ export default class HearingMap extends Visualization {
         .on("mouseout", () => this.tooltip.style("visibility", "hidden"));
 
       // Zoom to the country when clicked and adjust the stroke width of the circle.
-      this.viz.selectAll("circle:not(.legend)").on("click", (e, d) => this.zoom(e, d));
+      this.viz
+        .selectAll("circle:not(.legend)")
+        .on("click", (e, d) => this.zoom(e, d))
+        .style("stroke-width", 0.5);
+
+      // Draw the legend.
+      const legend = this.viz
+      .append('g')
+      .attr('fill', '#777')
+      .attr('transform', `translate(${this.width - this.maxRadius - 10},${this.height - 10})`)
+      .attr('text-anchor', 'middle')
+      .style('font', '10px sans-serif')
+      .selectAll('g')
+      .data(this.radius.ticks(4).slice(1))
+      .join('g')
+      .classed('legend', true);
+
+    legend.append('circle')
+      .attr('fill', 'none')
+      .attr('stroke', '#ccc')
+      .attr('cy', (d) => -this.radius(d))
+      .attr('r', this.radius)
+      .classed('legend', true);
+
+    legend.append('text')
+      .attr('y', (d) => -2 * this.radius(d))
+      .attr('dy', '1.3em')
+      .text(this.radius.tickFormat(4, 's'));
+    
+    legend.append('text')
+      .attr('y', -this.radius.range()[1])
+      .attr('dy', '-0.7em')
+      .text('Recordings');
 
       // If a user selects a scout from the dropdown, filter the recordings to the selected scout, inclding
       // single and multiple scouts.
@@ -252,7 +309,6 @@ export default class HearingMap extends Visualization {
         }
       });
 
-
       // If a user changes the year slider, filter the data and display those points where
       // the start date is less than or equal to the year selected. Otherwise, display all points.
       d3.select("#timeline").on("change", (e) => {
@@ -273,7 +329,7 @@ export default class HearingMap extends Visualization {
       // on the map for the user to see.
       d3.select("#timeline").on("input", (e) => {
         const selectedYear = e.target.value;
-        // Check if the data is empty 
+        // Check if the data is empty
         if (
           this.viz
             .selectAll("circle:not(.legend)")
@@ -281,7 +337,8 @@ export default class HearingMap extends Visualization {
               (d) =>
                 d.start_date.split("-")[0] <= selectedYear &&
                 d.end_date.split("-")[0] >= selectedYear
-            ).empty()
+            )
+            .empty()
         ) {
           this.viz
             .append("text")
@@ -298,8 +355,11 @@ export default class HearingMap extends Visualization {
       // If the user presses the play button, advance the year slider by one year every second. This also
       // updates the map to display the points for the selected year.
       d3.select("#play-timeline").on("click", () => {
+        // Set the scout selector to "All" so that all points are displayed.
+        d3.select("#scouts_selection").property("value", "All");
+        // If the play button is clicked, change the icon to a pause button.
         const playButton = d3.select("#play-timeline");
-        // Don't display the "no-data" message if the user is playing the timeline. If the "no-data" message is 
+        // Don't display the "no-data" message if the user is playing the timeline. If the "no-data" message is
         // present, remove it.
         if (d3.select(".no-data").node()) {
           d3.select(".no-data").remove();
@@ -311,7 +371,7 @@ export default class HearingMap extends Visualization {
             const slider = d3.select("#timeline");
             const currentYear = parseInt(slider.property("value"));
             const maxYear = parseInt(slider.property("max"));
-            // Display the current year in year-range 
+            // Display the current year in year-range
             d3.select("#year-range").text(currentYear);
             if (currentYear < maxYear) {
               slider.property("value", currentYear + 1);
@@ -322,8 +382,7 @@ export default class HearingMap extends Visualization {
               slider.dispatch("change");
             }
           }, 1000);
-        }
-        else {
+        } else {
           playButton.text("Play");
           d3.select("#reset-timeline").attr("disabled", null);
           clearInterval(this.animation);
@@ -336,6 +395,10 @@ export default class HearingMap extends Visualization {
         document.getElementById("timeline").value = 1903;
         this.viz.selectAll("circle").style("display", "block");
         document.getElementById("scouts_selection").value = "All";
+        // If .no-data is present, remove it.
+        if (d3.select(".no-data").node()) {
+          d3.select(".no-data").remove();
+        }
       });
     });
   }

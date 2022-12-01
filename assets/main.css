@@ -29,6 +29,10 @@ label {
   stroke: black;
 }
 
+.point:hover {
+  fill-opacity: 1;
+}
+
 .tooltip {
   background: rgba(101, 104, 109, 0.9);
   border-radius: 0.2rem;
