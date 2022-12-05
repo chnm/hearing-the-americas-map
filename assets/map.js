@@ -313,17 +313,40 @@ export default class HearingMap extends Visualization {
       // the start date is less than or equal to the year selected. Otherwise, display all points.
       d3.select("#timeline").on("change", (e) => {
         const selectedYear = e.target.value;
-        this.viz.selectAll("circle").style("display", "none");
-        this.viz
-          .selectAll("circle")
-          // ensure that start_date is only the year
-          .filter(
-            (d) =>
-              d.start_date.split("-")[0] <= selectedYear &&
-              d.end_date.split("-")[0] >= selectedYear
-          )
-          .style("display", "block");
+        if (selectedYear === "All") {
+          this.viz.selectAll("circle").style("display", "block");
+        } else {
+          this.viz
+            .selectAll("circle")
+            .style("display", "none")
+            .filter((d) => {
+              // if a start date is undefined, skip it
+              if (d.start_date === undefined) {
+                return;
+              }
+              const start_year = d.start_date.split('-')[0];
+              // const start_year = d.start_date.split('-')[0];
+              const end_year = d.end_date.split('-')[0];
+              if (start_year <= selectedYear && end_year >= selectedYear) {
+                return d;
+              }
+            })
+            .style("display", "block");
+        }
       });
+      // d3.select("#timeline").on("change", (e) => {
+      //   const selectedYear = e.target.value;
+      //   this.viz.selectAll("circle").style("display", "none");
+      //   this.viz
+      //     .selectAll("circle")
+      //     // ensure that start_date is only the year
+      //     .filter(
+      //       (d) =>
+      //         d.start_date.split("-")[0] <= selectedYear &&
+      //         d.end_date.split("-")[0] >= selectedYear
+      //     )
+      //     .style("display", "block");
+      // });
 
       // If the user selects a year without any points to display, print a message
       // on the map for the user to see.
