@@ -297,6 +297,10 @@ export default class HearingMap extends Visualization {
             .selectAll("circle")
             .style("display", "none")
             .filter((d) => {
+              // if scouts are undefined, skip it
+              if (!d.scouts) {
+                return false;
+              }
               // We need to check if the scout is in the array of scouts for each recording. If it is, we
               // return the recording.
               for (let i = 0; i < d.scouts.length; i++) {
