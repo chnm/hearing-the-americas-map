@@ -13,7 +13,7 @@ const fs = require('fs');
 // optimizations appropriate for the given environment.
 module.exports = {
     mode: 'production',
-    entry: './assets/main.js',
+    entry: './src/assets/main.js',
     output: {
         path: path.resolve(__dirname, 'dist'),
         filename: 'index.js'
@@ -27,8 +27,8 @@ module.exports = {
 
 const minifyCss = async () => {
     const output = await postcss([cssnano, autoprefixer]).process(
-        fs.readFileSync('assets/main.css', 'utf8'),
-        { from: 'assets/main.css', to: 'dist/main.css' }
+        fs.readFileSync('src/assets/main.css', 'utf8'),
+        { from: 'src/assets/main.css', to: 'dist/main.css' }
     );
     fs.writeFileSync('dist/main.css', output.css);
 };

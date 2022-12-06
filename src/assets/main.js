@@ -1,4 +1,5 @@
 import HearingMap from "./map.js";
+// import HearingChart from "./chart.js";
 
 const urls = [
   "https://data.chnm.org/ne/northamerica/",
@@ -24,6 +25,14 @@ function setup(data) {
     { width: 1000, height: 525 },
     { top: 10, right: 10, bottom: 10, left: 10 }
   );
+  // const chart = new HearingChart(
+  //   "#chart",
+  //   { northamerica: data[0], southamerica: data[1] },
+  //   { width: 1000, height: 525 },
+  //   { top: 10, right: 10, bottom: 10, left: 10 }
+  // )
   viz.render();
   viz.update();
+  // chart.render();
+  // chart.update();
 }

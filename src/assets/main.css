@@ -10,17 +10,17 @@ label {
 }
 
 #map {
-  background: #ffffff;
+  background: lightblue;
 }
 
 .country {
   fill: transparent;
-  stroke: #41464c;
+  stroke: transparent;
 }
 
 .states {
   fill: transparent;
-  stroke: #41464c;
+  stroke: transparent;
 }
 
 .point {
@@ -66,4 +66,23 @@ label {
 
 .slider {
   width: 100%;
+}
+
+/* styles for line chart */
+.line {
+  fill: none;
+  stroke: steelblue;
+  stroke-width: 1.5px;
+}
+
+/* axis */
+.axis path,
+.axis line {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
+
+.axis text {
+  font-size: 12px;
 }
