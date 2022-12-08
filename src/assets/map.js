@@ -150,23 +150,19 @@ export default class HearingMap extends Visualization {
               name: s,
             };
           }),
-          recordings: +d.recordings,
+         recordings: +d.recordings,
         };
       });
 
       // We create our array of scouts from recordings.csv to use in the dropdown.
+      // We also trim whitespace from the scout names.
       const scouts = [];
       recordings.forEach((recording) => {
         recording.scouts.forEach((scout) => {
           if (!scouts.includes(scout.name)) {
-            scouts.push(scout.name);
+            scouts.push(scout.name.trim());
           }
         });
-      });
-
-      // Trim the whitespace from the scout names.
-      scouts.forEach((scout, i) => {
-        scouts[i] = scout.trim();
       });
 
       // Return the unique values of the scouts array and sort alphabetically.
@@ -177,7 +173,7 @@ export default class HearingMap extends Visualization {
       // We then add the "All" option to the top of the array.
       filteredScouts.unshift("All");
 
-      // Create a dropdown menu
+      // Create a dropdown menu for the scouts.
       d3.select("#scouts-dropdown")
         .append("label")
         .text("Select a scout")
@@ -189,67 +185,71 @@ export default class HearingMap extends Visualization {
         .attr("value", (d) => d)
         .text((d) => d);
 
-      // Sum all recordings per city
-      const totalrecordingsPerCity = {};
+      // We need to adjust the recordings data to include a nested object of 
+      // scouts that have multiple cities and their total recordings, so we can 
+      // display the sum of their recordings when their name is selected
+      // from the dropdown.
+      const recordingsPerScout = {};
       recordings.forEach((recording) => {
-        const key = `${recording.city}`;
-        if (totalrecordingsPerCity[key]) {
-          totalrecordingsPerCity[key].recordings += recording.recordings;
+        recording.scouts.forEach((scout) => {
+          const key = `${scout.name.trim()}`;
+          if (recordingsPerScout[key]) {
+            recordingsPerScout[key].recordings += recording.recordings;
+          } else {
+            recordingsPerScout[key] = {
+              recordings: recording.recordings,
+              lat: recording.lat,
+              lon: recording.lon,
+              city: recording.city,
+              country: recording.country,
+            };
+          }
+        });
+      });
+
+      // We also need to determine recordings per city. This will be used in the selection of
+      // "All" in the dropdown.
+      const recordingsPerCity = {};
+      recordings.forEach((recording) => {
+        const key = `${recording.city.trim()}`;
+        if (recordingsPerCity[key]) {
+          recordingsPerCity[key].recordings += recording.recordings;
         } else {
-          totalrecordingsPerCity[key] = {
+          recordingsPerCity[key] = {
             recordings: recording.recordings,
             lat: recording.lat,
             lon: recording.lon,
+            city: recording.city,
+            country: recording.country,
           };
         }
       });
 
+      // Now, we add the recordingsPerScout object and recordingsPerCity object to the 
+      // recordings array as new properties at the end of the array. It also needs to 
+      // be an array of objects, so we use Object.entries() to convert it to an array of 
+      // arrays and give it a name of "totalscouts" and "totalcities".
+      recordings.push({ totalscouts: Object.entries(recordingsPerScout) });
+      recordings.push({ totalcities: Object.entries(recordingsPerCity) });
+      
       this.viz
         .selectAll("circle")
-        .data(Object.values(totalrecordingsPerCity))
+        .data(recordings)
         .enter()
         .append("circle")
         .attr(
           "cx",
           (d) =>
-            this.projection([d.lon, d.lat])[0] - Math.random() * this.jitter
+            this.projection([d.lon, d.lat])[0]
         )
         .attr(
           "cy",
           (d) =>
-            this.projection([d.lon, d.lat])[1] - Math.random() * this.jitter
+            this.projection([d.lon, d.lat])[1]
         )
-        .attr("r", (d) => this.radius(d.recordings))
+        .attr("r", (d) => this.radius(d.totalcities))
         .classed("point", true)
         .attr("stroke-width", 0.5);
-      
-      // If a user selects a scout from the dropdown, we use the `recordings` data instead of 
-      // `totalrecordingsPerCity` to draw the circles.
-      d3.select("#scouts_selection").on("change", (event) => {
-        console.log('scout selected');
-        const selectedScout = event.target.value;
-        if (selectedScout !== "All") {
-          this.viz.selectAll("circle").exit().remove();
-          this.viz
-            .selectAll("circle")
-            .data(recordings)
-            .enter()
-            .append("circle")
-            .attr(
-              "cx",
-              (d) =>
-                this.projection([d.lon, d.lat])[0] - Math.random() * this.jitter
-            )
-            .attr(
-              "cy",
-              (d) =>
-                this.projection([d.lon, d.lat])[1] - Math.random() * this.jitter
-            )
-            .attr("r", (d) => this.radius(d.recordings))
-            .classed("point", true)
-            .attr("stroke-width", 0.5);
-        }
-      });
 
       // Display the tooltip on mouseover
       this.viz
@@ -320,6 +320,7 @@ export default class HearingMap extends Visualization {
 
       d3.select("#scouts_selection").on("change", (e) => {
         const selectedScout = e.target.value;
+        console.log('scout changed: ', selectedScout)
         if (selectedScout === "All") {
           this.viz.selectAll("circle").style("display", "block");
         } else {
@@ -389,132 +390,11 @@ export default class HearingMap extends Visualization {
             .attr("x", this.width / 2)
             .attr("y", this.height / 2)
             .attr("text-anchor", "middle")
-            .text("No international recordings that year.");
+            .text("There are no international recordings for this year.");
         } else {
           d3.select(".no-data").remove();
         }
       });
-
-      // The filter needs to be able to handle a few different interactions for scouts and timeline:
-      // 1. If a user selects a scout, filter the recordings to the selected scout and display the points.
-      // 2. If a user selects an individual year on the year slider, filter the recordings to the selected year and display the points.
-      // 3. If a user selects a scout and a year slider value, filter the recordings to the selected scout and year and display the points.
-      // To do this, we will keep track of the selected scount and the year slider value separately.
-      // Those will then be provided to a filtereData function to handle the filtering.
-
-      // Keep track of the selected scout and year slider value
-      // let filteredScoutSelection = null;
-      // let filteredYearSelection = null;
-
-            // We need to remember the selected scout and year slider value so that we can use them in the filterData function.
-      // If they're not set, we'll set them to null. Otherwise, we'll set them to the selected value.
-      // d3.select("#scouts_selection").on("change", (e) => {
-      //   filteredScoutSelection = e.target.value;
-      //   filterData(filteredScoutSelection, filteredYearSelection);
-      // });
-
-      // d3.select("#timeline").on("change", (e) => {
-      //   filteredYearSelection = e.target.value;
-      //   filterData(filteredScoutSelection, filteredYearSelection);
-      // });
-
-      // const filterData = (scout, year) => {
-      //   console.log("scout: ", scout, "year: ", year);
-      //   // If the user selects a scout, filter the recordings to the selected scout and display the points.
-      //   if (scout !== "All") {
-      //     this.viz
-      //       .selectAll("circle")
-      //       .style("display", "none")
-      //       .filter((d) => {
-      //         // if scouts are undefined skip
-      //         if (d.scouts === undefined) {
-      //           return false;
-      //         }
-      //         // We need to check if the scout is in the array of scouts for each recording. If it is, we
-      //         // return the recording.
-      //         for (let i = 0; i < d.scouts.length; i++) {
-      //           if (d.scouts[i].name.trim() === scout) {
-      //             return d;
-      //           }
-      //         }
-      //       })
-      //       .style("display", "block");
-      //   } else {
-      //     this.viz.selectAll("circle").style("display", "block");
-      //   }
-
-      //   // If the user selects an individual year on the year slider, filter the recordings to the selected year and display the points.
-      //   if (year !== "All") {
-      //     this.viz
-      //       .selectAll("circle")
-      //       .style("display", "none")
-      //       .filter((d) => {
-      //         // if a start date is undefined, skip it
-      //         if (d.start_date === undefined) {
-      //           return;
-      //         }
-      //         const start_year = d.start_date.split("-")[0];
-      //         const end_year = d.end_date.split("-")[0];
-      //         if (start_year <= year && end_year >= year) {
-      //           return d;
-      //         }
-      //       })
-      //       .style("display", "block");
-      //   } else {
-      //     this.viz.selectAll("circle").style("display", "block");
-      //   }
-
-      //   // If the user selects a scout and a year slider value, filter the recordings to the selected scout and year and display the points.
-      //   if (scout !== "All" && year !== "All") {
-      //     this.viz
-      //       .selectAll("circle")
-      //       .style("display", "none")
-      //       .filter((d) => {
-      //         // if a start date is undefined, skip it
-      //         if (d.start_date === undefined) {
-      //           return;
-      //         }
-      //         const start_year = d.start_date.split("-")[0];
-      //         const end_year = d.end_date.split("-")[0];
-      //         if (start_year <= year && end_year >= year) {
-      //           // We need to check if the scout is in the array of scouts for each recording. If it is, we
-      //           // return the recording.
-      //           for (let i = 0; i < d.scouts.length; i++) {
-      //             if (d.scouts[i].name.trim() === scout) {
-      //               return d;
-      //             }
-      //           }
-      //         }
-      //       })
-      //       .style("display", "block");
-      //   } else {
-      //     this.viz.selectAll("circle").style("display", "block");
-      //   }
-      // };
-
-      // If a user selects a scout from the dropdown, store that value in filteredScoutSelection.
-      // d3.select("#scouts_selection").on("change", (e) => {
-      //   filteredScoutSelection = e.target.value;
-      //   filterData(filteredScoutSelection, filteredYearSelection);
-      // });
-
-      // // If a user changes the year slider, store that value in filteredYearSelection.
-      // d3.select("#timeline").on("change", (e) => {
-      //   filteredYearSelection = e.target.value;
-      //   filterData(filteredScoutSelection, filteredYearSelection);
-      // });
-
-      // // Watch for user changes to scouts selection or year range input.
-      // d3.select("#scouts_selection").on("change", (e) => {
-      //   // If the user selects a scout, filter the recordings to the selected scout and display the points.
-      //   const selectedScout = e.target.value;
-      //   filterData(selectedScout, filteredYearSelection);
-      // });
-      // d3.select("#timeline").on("input", (e) => {
-      //   // If the user selects an individual year on the year slider, filter the recordings to the selected year and display the points.
-      //   const selectedYear = e.target.value;
-      //   filterData(filteredScoutSelection, selectedYear);
-      // });
 
       // If the user presses the play button, advance the year slider by one year every second. This also
       // updates the map to display the points for the selected year.
