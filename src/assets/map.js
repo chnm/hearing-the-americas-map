@@ -83,7 +83,6 @@ export default class HearingMap extends Visualization {
   }
 
   render() {
-    console.log("render started");
     this.viz
       .append("path")
       .datum(this.data.northamerica)
@@ -150,7 +149,7 @@ export default class HearingMap extends Visualization {
               name: s,
             };
           }),
-         recordings: +d.recordings,
+          recordings: +d.recordings,
         };
       });
 
@@ -185,18 +184,17 @@ export default class HearingMap extends Visualization {
         .attr("value", (d) => d)
         .text((d) => d);
 
-      // We need to adjust the recordings data to include a nested object of 
-      // scouts that have multiple cities and their total recordings, so we can 
+      // We need to adjust the recordings data to include a nested object of
+      // scouts that have multiple cities and their total recordings, so we can
       // display the sum of their recordings when their name is selected
       // from the dropdown.
-      const recordingsPerScout = {};
       recordings.forEach((recording) => {
         recording.scouts.forEach((scout) => {
           const key = `${scout.name.trim()}`;
-          if (recordingsPerScout[key]) {
-            recordingsPerScout[key].recordings += recording.recordings;
+          if (recording.scouts[key]) {
+            recording.scouts[key].recordings += recording.recordings;
           } else {
-            recordingsPerScout[key] = {
+            recording.scouts[key] = {
               recordings: recording.recordings,
               lat: recording.lat,
               lon: recording.lon,
@@ -225,31 +223,27 @@ export default class HearingMap extends Visualization {
         }
       });
 
-      // Now, we add the recordingsPerScout object and recordingsPerCity object to the 
-      // recordings array as new properties at the end of the array. It also needs to 
-      // be an array of objects, so we use Object.entries() to convert it to an array of 
+      // Now, we add the recordingsPerScout object and recordingsPerCity object to the
+      // recordings array as new properties at the end of the array. It also needs to
+      // be an array of objects, so we use Object.entries() to convert it to an array of
       // arrays and give it a name of "totalscouts" and "totalcities".
-      recordings.push({ totalscouts: Object.entries(recordingsPerScout) });
-      recordings.push({ totalcities: Object.entries(recordingsPerCity) });
-      
+      // recordings.push({ totalscouts: Object.entries(recordingsPerScout) });
+      let totaldata = [];
+      totaldata.push({ totalcities: Object.entries(recordingsPerCity) });
+      totaldata.push({ recordings: recordings });
+
+      console.log("recordings: ", totaldata);
+
+      // Display the data, with `totalcities` as the default.
       this.viz
         .selectAll("circle")
-        .data(recordings)
-        .enter()
-        .append("circle")
-        .attr(
-          "cx",
-          (d) =>
-            this.projection([d.lon, d.lat])[0]
-        )
-        .attr(
-          "cy",
-          (d) =>
-            this.projection([d.lon, d.lat])[1]
-        )
-        .attr("r", (d) => this.radius(d.totalcities))
-        .classed("point", true)
-        .attr("stroke-width", 0.5);
+        .data(totaldata[0].totalcities)
+        .join("circle")
+        .attr("cx", (d) => this.projection([d[1].lon, d[1].lat])[0])
+        .attr("cy", (d) => this.projection([d[1].lon, d[1].lat])[1])
+        .attr("r", (d) => this.radius(d[1].recordings))
+        .attr("fill", "red")
+        .attr("class", "point");
 
       // Display the tooltip on mouseover
       this.viz
@@ -320,7 +314,7 @@ export default class HearingMap extends Visualization {
 
       d3.select("#scouts_selection").on("change", (e) => {
         const selectedScout = e.target.value;
-        console.log('scout changed: ', selectedScout)
+        console.log("scout changed: ", selectedScout);
         if (selectedScout === "All") {
           this.viz.selectAll("circle").style("display", "block");
         } else {
@@ -359,8 +353,8 @@ export default class HearingMap extends Visualization {
               if (d.start_date === undefined) {
                 return;
               }
-              const start_year = d.start_date.split('-')[0];
-              const end_year = d.end_date.split('-')[0];
+              const start_year = d.start_date.split("-")[0];
+              const end_year = d.end_date.split("-")[0];
               if (start_year <= selectedYear && end_year >= selectedYear) {
                 return d;
               }
@@ -377,11 +371,14 @@ export default class HearingMap extends Visualization {
         if (
           this.viz
             .selectAll("circle:not(.legend)")
-            .filter(
-              (d) =>
-                d.start_date.split("-")[0] <= selectedYear &&
-                d.end_date.split("-")[0] >= selectedYear
-            )
+            .filter((d) => {
+              // if a start date is undefined, skip it
+              if (d.start_date === undefined) {
+                return;
+              }
+              d.start_date.split("-")[0] <= selectedYear &&
+                d.end_date.split("-")[0] >= selectedYear;
+            })
             .empty()
         ) {
           this.viz
