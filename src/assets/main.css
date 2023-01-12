@@ -9,6 +9,36 @@ label {
   margin-bottom: 0.5rem;
 }
 
+/* set up our two column layout, 75/25 */
+.viz__container {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+
+.display__map {
+  width: 75%;
+  padding-right: 1rem;
+}
+
+.display__metadata {
+  width: 25%;
+}
+
+/* if mobile screen, make the map 100% width and push metadata below */
+@media screen and (max-width: 600px) {
+  .display__map {
+    width: 100%;
+  }
+  .display__metadata {
+    width: 100%;
+  }
+}
+
+.timeline-label {
+  font-size: 1rem;
+}
+
 #map {
   background: lightblue;
 }
@@ -54,7 +84,7 @@ label {
 }
 
 .timeline_container {
-  width: 40%;
+  width: 80%;
 }
 
 .float-left {
