@@ -60,26 +60,38 @@ export default class HearingMap extends Visualization {
         .attr("stroke-width", `${1 / this.kScale}px`);
     };
 
-    // The tooltip is conditional based on whether we're displaying
-    // All data or a single denomination.
-    this.tooltipRender = (e, d) => {
+    // The two tooltips handle different data, 
+    // so they are separated out into two functions for all data and 
+    // individual data.
+    this.tooltipRenderAllData = (e, d) => {
+      console.log('moused over alldata')
       const formatTime = d3.timeFormat("%b %d, %Y");
-      const text =
-        `<strong>${d.city}, ${d.country}</strong><br>
-        Period of scout visit: ${formatTime(
-          new Date(d.start_date)
-        )} - ${formatTime(new Date(d.end_date))}<br>
-        Number of recordings: ${d.recordings}<br>
-        Scouts:` + // loop through the scouts object to display a list of names
-        Object.keys(d.scouts)
-          .map((key) => {
-            return `<br> - ${d.scouts[key].name}`;
-          })
-          .join("");
+      let text = "";
+        text = `<strong>${d.city}, ${d.country}</strong><br/>
+        Years active: ${
+          // display the list of years from the years array and return each object
+          // d.years.map((y) => y.year).join(", ")
+          d.years
+        }<br/>
+        Recordings: ${d.recordings}`;
+
       // Display recordings data
       this.tooltip.html(text);
       this.tooltip.style("visibility", "visible");
     };
+
+    this.tooltipRenderIndividualData = (e, d) => {
+      console.log('moused over individual data');
+      const formatTime = d3.timeFormat("%b %d, %Y");
+      let text = "";
+        text = `<strong>${d.city}, ${d.country}</strong><br/>
+        Dates of visit: ${formatTime(d.start_date)} - ${formatTime(d.end_date)}<br/>
+        Recordings: ${d.recordings}`;
+
+      // Display recordings data
+      this.tooltip.html(text);
+      this.tooltip.style("visibility", "visible");
+    }
   }
 
   render() {
@@ -201,6 +213,8 @@ export default class HearingMap extends Visualization {
               lon: recording.lon,
               city: recording.city,
               country: recording.country,
+              start_date: recording.start_date,
+              end_date: recording.end_date,
             };
           }
         });
@@ -219,11 +233,56 @@ export default class HearingMap extends Visualization {
             lat: recording.lat,
             lon: recording.lon,
             city: recording.city,
-            country: recording.country,
+            country: recording.country
           };
         }
       });
 
+      // We need to determine the years of each recording per city, which we will
+      // push to recordingsPerCity. We need to find the earliest start date and the
+      // latest end date for each city. We will use this to determine the range of
+      // years for each city. We will parse the yyyy-mm-dd format to yyyy.
+      recordings.forEach((recording) => {
+        const key = `${recording.city.trim()}`;
+        if (recordingsPerCity[key]) {
+          recordingsPerCity[key].start_date = d3.min([
+            recordingsPerCity[key].start_date,
+            recording.start_date.substring(0, 4),
+          ]);
+          recordingsPerCity[key].end_date = d3.max([
+            recordingsPerCity[key].end_date,
+            recording.end_date.substring(0, 4),
+          ]);
+        } else {
+          recordingsPerCity[key] = {
+            start_date: recording.start_date.substring(0, 4),
+            end_date: recording.end_date.substring(0, 4),
+          };
+        }
+      });
+
+      // We will append to the recordingsPerCity an array of each year
+      // that a recording was made in that city. We will parse the yyyy-mm-dd
+      // for the yyyy value and push it to the array, returning only those years
+      // that a recording was made for that city. Then, we'll return just unique 
+      // values of the array.
+      recordings.forEach((recording) => {
+        const key = `${recording.city.trim()}`;
+        if (recordingsPerCity[key]) {
+          recordingsPerCity[key].years = recordings
+            .filter((d) => d.city === recording.city)
+            .map((d) => d.start_date.substring(0, 4))
+            .filter((d, i, a) => a.indexOf(d) === i);
+        } else {
+          recordingsPerCity[key] = {
+            years: recordings
+              .filter((d) => d.city === recording.city)
+              .map((d) => d.start_date.substring(0, 4))
+              .filter((d, i, a) => a.indexOf(d) === i),
+          };
+        }
+      });
+ 
       // Now, we add the recordingsPerScout object and recordingsPerCity object to the
       // recordings array as new properties at the end of the array. It also needs to
       // be an array of objects, so we use Object.entries() to convert it to an array of
@@ -232,6 +291,8 @@ export default class HearingMap extends Visualization {
       let totaldata = [];
       totaldata.push({ totalcities: Object.entries(recordingsPerCity) });
       totaldata.push({ recordings: recordings });
+
+      console.log(totaldata)
 
       // The function to display all data.
       this.displayAllData = () => {
@@ -360,10 +421,18 @@ export default class HearingMap extends Visualization {
         this.displayData(currentScout, currentYear);
       });
 
-      // Display the tooltip on mouseover
+      // Display the tooltip on click
       this.viz
         .selectAll("circle:not(.legend)")
-        .on("mouseover", this.tooltipRender)
+        .on("mouseover", (d) => {
+          if (d3.select("#scouts_selection").property("value") === "All") {
+            console.log('all!')
+            this.tooltipRenderAllData;
+          } else if (d3.select("#scouts_selection").property("value") !== "All") {
+            console.log('some!')
+            this.tooltipRenderIndividualData;
+          }
+        })
         .on("mousemove", () => {
           // Show the tooltip to the right of the mouse, unless we are
           // on the rightmost 25% of the browser.
@@ -387,10 +456,10 @@ export default class HearingMap extends Visualization {
         .on("mouseout", () => this.tooltip.style("visibility", "hidden"));
 
       // Zoom to the country when clicked and adjust the stroke width of the circle.
-      this.viz
-        .selectAll("circle:not(.legend)")
-        .on("click", (e, d) => this.zoom(e, d))
-        .style("stroke-width", 0.5);
+      // this.viz
+      //   .selectAll("circle:not(.legend)")
+      //   .on("click", (e, d) => this.zoom(e, d))
+      //   .style("stroke-width", 0.5);
 
       // Draw the legend.
       const legend = this.viz
@@ -426,95 +495,13 @@ export default class HearingMap extends Visualization {
         .attr("y", -this.radius.range()[1])
         .attr("dy", "-0.7em")
         .text("Recordings");
-
-      // Handle scout selections
-      // -----------------------
-      // d3.select("#scouts_selection").on("change", (e) => {
-      //   const selectedScout = e.target.value;
-      //   console.log("scout changed: ", selectedScout);
-      //   if (selectedScout === "All") {
-      //     this.viz.selectAll("circle").style("display", "block");
-      //   } else {
-      //     this.viz
-      //       .selectAll("circle")
-      //       .style("display", "none")
-      //       .filter((d) => {
-      //         // if scouts are undefined skip
-      //         if (d.scouts === undefined) {
-      //           return false;
-      //         }
-      //         // We need to check if the scout is in the array of scouts for each recording. If it is, we
-      //         // return the recording.
-      //         for (let i = 0; i < d.scouts.length; i++) {
-      //           if (d.scouts[i].name.trim() === selectedScout) {
-      //             return d;
-      //           }
-      //         }
-      //       })
-      //       .style("display", "block");
-      //   }
-      // });
-
-      // If a user changes the year slider, filter the data and display those points where
-      // the start date is less than or equal to the year selected. Otherwise, display all points.
-      // d3.select("#timeline").on("change", (e) => {
-      //   const selectedYear = e.target.value;
-      //   if (selectedYear === "All") {
-      //     this.viz.selectAll("circle").style("display", "block");
-      //   } else {
-      //     this.viz
-      //       .selectAll("circle")
-      //       .style("display", "none")
-      //       .filter((d) => {
-      //         // if a start date is undefined, skip it
-      //         if (d.start_date === undefined) {
-      //           return;
-      //         }
-      //         const start_year = d.start_date.split("-")[0];
-      //         const end_year = d.end_date.split("-")[0];
-      //         if (start_year <= selectedYear && end_year >= selectedYear) {
-      //           return d;
-      //         }
-      //       })
-      //       .style("display", "block");
-      //   }
-      // });
-
-      // If the user selects a year without any points to display, print a message
-      // on the map for the user to see.
-      // d3.select("#timeline").on("input", (e) => {
-      //   const selectedYear = e.target.value;
-      //   // Check if the data is empty
-      //   if (
-      //     this.viz
-      //       .selectAll("circle:not(.legend)")
-      //       .filter((d) => {
-      //         // if a start date is undefined, skip it
-      //         if (d.start_date === undefined) {
-      //           return;
-      //         }
-      //         d.start_date.split("-")[0] <= selectedYear &&
-      //           d.end_date.split("-")[0] >= selectedYear;
-      //       })
-      //       .empty()
-      //   ) {
-      //     this.viz
-      //       .append("text")
-      //       .attr("class", "no-data")
-      //       .attr("x", this.width / 2)
-      //       .attr("y", this.height / 2)
-      //       .attr("text-anchor", "middle")
-      //       .text("There are no international recordings for this year.");
-      //   } else {
-      //     d3.select(".no-data").remove();
-      //   }
-      // });
+      
+      // TODO: If a user's filters return no data, display a message on the map.
+      // This will be true for both scouts and years.
 
       // If the user presses the play button, advance the year slider by one year every second. This also
       // updates the map to display the points for the selected year.
       d3.select("#play-timeline").on("click", () => {
-        // Set the scout selector to "All" so that all points are displayed.
-        d3.select("#scouts_selection").property("value", "All");
         // If the play button is clicked, change the icon to a pause button.
         const playButton = d3.select("#play-timeline");
         // Don't display the "no-data" message if the user is playing the timeline. If the "no-data" message is
@@ -530,7 +517,7 @@ export default class HearingMap extends Visualization {
             const currentYear = parseInt(slider.property("value"));
             const maxYear = parseInt(slider.property("max"));
             // Display the current year in year-range
-            d3.select("#year-range").text(currentYear);
+            // d3.select("#year-range").text(currentYear + 1);
             if (currentYear < maxYear) {
               slider.property("value", currentYear + 1);
               slider.dispatch("change");
@@ -547,16 +534,19 @@ export default class HearingMap extends Visualization {
         }
       });
 
+      // When the year slider is changed, update the span#body__year-range to display the current year.
+      d3.select("#timeline").on("input", () => {
+        const slider = d3.select("#timeline");
+        const currentYear = parseInt(slider.property("value"));
+        d3.select("#body__year-range").text(currentYear);
+      });
+
       // If the reset button is pressed, reset to the timeline-label, display all points, and reset the dropdown.
       this.resetButton.addEventListener("click", () => {
-        document.getElementById("year-range").innerHTML = "1903-1926";
+        d3.select("#body__year-range").text("1903-1926");
         document.getElementById("timeline").value = 1903;
-        this.viz.selectAll("circle").style("display", "block");
         document.getElementById("scouts_selection").value = "All";
-        // If .no-data is present, remove it.
-        if (d3.select(".no-data").node()) {
-          d3.select(".no-data").remove();
-        }
+        this.displayData();
       });
     });
   }
