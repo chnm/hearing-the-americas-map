@@ -21,7 +21,7 @@ function setup(data) {
   const viz = new HearingMap(
     "#map",
     { northamerica: data[0], southamerica: data[1] },
-    { width: 1000, height: 525 },
+    { width: 1000, height: 725 },
     { top: 10, right: 10, bottom: 10, left: 10 }
   );
   viz.render();

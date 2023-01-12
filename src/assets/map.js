@@ -187,7 +187,7 @@ export default class HearingMap extends Visualization {
       // Create a dropdown menu for the scouts.
       d3.select("#scouts-dropdown")
         .append("label")
-        .text("Select a scout")
+        .text("Scouts: ")
         .append("select")
         .attr("id", "scouts_selection")
         .selectAll("option")
