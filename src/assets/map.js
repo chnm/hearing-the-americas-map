@@ -60,38 +60,79 @@ export default class HearingMap extends Visualization {
         .attr("stroke-width", `${1 / this.kScale}px`);
     };
 
-    // The two tooltips handle different data, 
-    // so they are separated out into two functions for all data and 
-    // individual data.
-    this.tooltipRenderAllData = (e, d) => {
-      console.log('moused over alldata')
+    // The renderMetadata function is called when the user clicks on a point
+    // and updates the righthand metadata panel. It takes the data from the
+    // point that was clicked and uses it to update the metadata panel.
+    this.renderMetadata = (e, d) => {
       const formatTime = d3.timeFormat("%b %d, %Y");
-      let text = "";
-        text = `<strong>${d.city}, ${d.country}</strong><br/>
-        Years active: ${
-          // display the list of years from the years array and return each object
-          // d.years.map((y) => y.year).join(", ")
-          d.years
-        }<br/>
-        Recordings: ${d.recordings}`;
+      const location = `${d.city}, ${d.country}`;
 
-      // Display recordings data
+      // The text avaiable for display in the metadata panel depends on
+      // whether there is data available to populate it. 
+      // If there is no data, the text will be empty and any labels will be hidden.
+      // Metadata will include the following fields:
+      // - Dates of visit
+      // - List of years when recordings were made
+      // - Number of recordings
+      // - Scouts who visited the location
+
+      const displayStartEndDates = `${formatTime(d.start_date)} - ${formatTime(d.end_date)}`;
+      // get the nested array of years from totalcities array
+      const displayYears = d.years
+        ? d.years.map((year) => {
+            return `<br> - ${year}`;
+          })
+        : null;
+      const displayRecordings = d.recordings;
+      const displayScouts = d.scouts 
+        ? Object.keys(d.scouts).map((key) => { return `<br> - ${d.scouts[key].name}`; })
+        : null;
+
+        // show the city and country
+      d3.select(".metadata__title").html(location);
+
+      // display the number of recordings, if the data is not empty
+      d3.select(".metadata__recordings")
+        .style("display", displayRecordings ? "block" : "none")
+        .html(`<strong>Recordings:</strong> ${displayRecordings}`);
+
+      // display the years, if the data is not empty
+      d3.select(".metadata__years")
+        .style("display", displayYears ? "block" : "none")
+        .html(`<strong>Years:</strong> ${displayYears}`);
+
+      // display the scouts, if the data is not empty
+      d3.select(".metadata__scouts")
+        .style("display", displayScouts ? "block" : "none")
+        .html(`<strong>Scouts:</strong> ${displayScouts}`);
+      
+      // display the start and end dates, if the data is not empty
+      // this is only displayed if the scouts_selection is not "All"
+      const selectedScouts = document.getElementById("scouts_selection").value;
+      if (selectedScouts !== "All") {
+        d3.select(".metadata__dates")
+          .style("display", displayStartEndDates ? "block" : "none")
+          .html(`<strong>Dates:</strong> ${displayStartEndDates}`);
+      }
+    };
+
+    this.resetMetadata = () => {
+      d3.select(".metadata__title").html("Global");
+      d3.select(".metadata__recordings").html("");
+      d3.select(".metadata__years").html("");
+      d3.select(".metadata__scouts").html("");
+      d3.select(".metadata__dates").html("");
+    };
+
+    // Tooltip only displays the city and country on mouseover.
+    this.tooltipRender = (e, d) => {
+      const formatTime = d3.timeFormat("%b %d, %Y");
+      const text =
+        `<strong>${d.city}, ${d.country}</strong><br>
+        Click on a point to view it's metadata<br/> or listen to music clips. Double-click to<br/> reset the metadata.`;
       this.tooltip.html(text);
       this.tooltip.style("visibility", "visible");
     };
-
-    this.tooltipRenderIndividualData = (e, d) => {
-      console.log('moused over individual data');
-      const formatTime = d3.timeFormat("%b %d, %Y");
-      let text = "";
-        text = `<strong>${d.city}, ${d.country}</strong><br/>
-        Dates of visit: ${formatTime(d.start_date)} - ${formatTime(d.end_date)}<br/>
-        Recordings: ${d.recordings}`;
-
-      // Display recordings data
-      this.tooltip.html(text);
-      this.tooltip.style("visibility", "visible");
-    }
   }
 
   render() {
@@ -292,7 +333,7 @@ export default class HearingMap extends Visualization {
       totaldata.push({ totalcities: Object.entries(recordingsPerCity) });
       totaldata.push({ recordings: recordings });
 
-      console.log(totaldata)
+      console.log(totaldata);
 
       // The function to display all data.
       this.displayAllData = () => {
@@ -317,6 +358,43 @@ export default class HearingMap extends Visualization {
           .attr("r", (d) => this.radius(d.recordings))
           .attr("fill", "red")
           .attr("class", "point");
+        
+        // We reattach the tooltip.
+        this.viz
+        .selectAll("circle:not(.legend)")
+        .on("mouseover", this.tooltipRender)
+        .on("mousemove", () => {
+          // Show the tooltip to the right of the mouse, unless we are
+          // on the rightmost 25% of the browser.
+          if (event.clientX / this.width >= 0.75) {
+            this.tooltip
+              .style("top", `${event.pageY - 10}px`)
+              .style(
+                "left",
+                `${
+                  event.pageX -
+                  this.tooltip.node().getBoundingClientRect().width -
+                  10
+                }px`
+              );
+          } else {
+            this.tooltip
+              .style("top", `${event.pageY - 10}px`)
+              .style("left", `${event.pageX + 10}px`);
+          }
+        })
+        .on("mouseout", () => this.tooltip.style("visibility", "hidden"));
+
+              // When a user clicks on a point, we will update the metadata pane. 
+      this.viz
+      .selectAll("circle:not(.legend)")
+      .on("click", this.renderMetadata);
+
+
+    // When the point is clicked a second time, we reset the metadata pane.
+    this.viz
+      .selectAll("circle:not(.legend)")
+      .on("dblclick", this.resetMetadata);
       };
 
       // The function to display the data for a scout.
@@ -335,6 +413,43 @@ export default class HearingMap extends Visualization {
           .attr("r", (d) => this.radius(d.recordings))
           .attr("fill", "red")
           .attr("class", "point");
+        
+        // We reattach the tooltip.
+        this.viz
+        .selectAll("circle:not(.legend)")
+        .on("mouseover", this.tooltipRender)
+        .on("mousemove", () => {
+          // Show the tooltip to the right of the mouse, unless we are
+          // on the rightmost 25% of the browser.
+          if (event.clientX / this.width >= 0.75) {
+            this.tooltip
+              .style("top", `${event.pageY - 10}px`)
+              .style(
+                "left",
+                `${
+                  event.pageX -
+                  this.tooltip.node().getBoundingClientRect().width -
+                  10
+                }px`
+              );
+          } else {
+            this.tooltip
+              .style("top", `${event.pageY - 10}px`)
+              .style("left", `${event.pageX + 10}px`);
+          }
+        })
+        .on("mouseout", () => this.tooltip.style("visibility", "hidden"));
+
+              // When a user clicks on a point, we will update the metadata pane. 
+      this.viz
+      .selectAll("circle:not(.legend)")
+      .on("click", this.renderMetadata);
+
+
+    // When the point is clicked a second time, we reset the metadata pane.
+    this.viz
+      .selectAll("circle:not(.legend)")
+      .on("dblclick", this.resetMetadata);
       };
 
       // The function to display the data for a year.
@@ -357,6 +472,43 @@ export default class HearingMap extends Visualization {
           .attr("r", (d) => this.radius(d.recordings))
           .attr("fill", "red")
           .attr("class", "point");
+        
+        // We reattach the tooltip.
+        this.viz
+        .selectAll("circle:not(.legend)")
+        .on("mouseover", this.tooltipRender)
+        .on("mousemove", () => {
+          // Show the tooltip to the right of the mouse, unless we are
+          // on the rightmost 25% of the browser.
+          if (event.clientX / this.width >= 0.75) {
+            this.tooltip
+              .style("top", `${event.pageY - 10}px`)
+              .style(
+                "left",
+                `${
+                  event.pageX -
+                  this.tooltip.node().getBoundingClientRect().width -
+                  10
+                }px`
+              );
+          } else {
+            this.tooltip
+              .style("top", `${event.pageY - 10}px`)
+              .style("left", `${event.pageX + 10}px`);
+          }
+        })
+        .on("mouseout", () => this.tooltip.style("visibility", "hidden"));
+
+              // When a user clicks on a point, we will update the metadata pane. 
+      this.viz
+      .selectAll("circle:not(.legend)")
+      .on("click", this.renderMetadata);
+
+
+    // When the point is clicked a second time, we reset the metadata pane.
+    this.viz
+      .selectAll("circle:not(.legend)")
+      .on("dblclick", this.resetMetadata);
       };
 
       // The function to display the data for a scout and a year.
@@ -377,6 +529,43 @@ export default class HearingMap extends Visualization {
           .attr("r", (d) => this.radius(d.recordings))
           .attr("fill", "red")
           .attr("class", "point");
+        
+        // We reattach the tooltip.
+        this.viz
+        .selectAll("circle:not(.legend)")
+        .on("mouseover", this.tooltipRender)
+        .on("mousemove", () => {
+          // Show the tooltip to the right of the mouse, unless we are
+          // on the rightmost 25% of the browser.
+          if (event.clientX / this.width >= 0.75) {
+            this.tooltip
+              .style("top", `${event.pageY - 10}px`)
+              .style(
+                "left",
+                `${
+                  event.pageX -
+                  this.tooltip.node().getBoundingClientRect().width -
+                  10
+                }px`
+              );
+          } else {
+            this.tooltip
+              .style("top", `${event.pageY - 10}px`)
+              .style("left", `${event.pageX + 10}px`);
+          }
+        })
+        .on("mouseout", () => this.tooltip.style("visibility", "hidden"));
+
+              // When a user clicks on a point, we will update the metadata pane. 
+      this.viz
+      .selectAll("circle:not(.legend)")
+      .on("click", this.renderMetadata);
+
+
+    // When the point is clicked a second time, we reset the metadata pane.
+    this.viz
+      .selectAll("circle:not(.legend)")
+      .on("dblclick", this.resetMetadata);
       };
 
       // This function handles the displaying of the data. It accepts a scout
@@ -401,38 +590,11 @@ export default class HearingMap extends Visualization {
             }
           }
         }
-      };
 
-      // By default, we display all the data.
-      this.displayData();
-
-      // Watch for changes to the scout and year inputs. When they change, call
-      // the `displayData` function.
-      d3.select("#scouts_selection").on("change", () => {
-        const currentScout = d3.select("#scouts_selection").property("value");
-        const slider = d3.select("#timeline");
-        const currentYear = parseInt(slider.property("value"))
-        this.displayData(currentScout, currentYear);
-      });
-      d3.select("#timeline").on("change", () => {
-        const slider = d3.select("#timeline");
-        const currentYear = parseInt(slider.property("value"))
-        const currentScout = d3.select("#scouts_selection").property("value");
-        this.displayData(currentScout, currentYear);
-      });
-
-      // Display the tooltip on click
-      this.viz
+        // We reattach the tooltip.
+        this.viz
         .selectAll("circle:not(.legend)")
-        .on("mouseover", (d) => {
-          if (d3.select("#scouts_selection").property("value") === "All") {
-            console.log('all!')
-            this.tooltipRenderAllData;
-          } else if (d3.select("#scouts_selection").property("value") !== "All") {
-            console.log('some!')
-            this.tooltipRenderIndividualData;
-          }
-        })
+        .on("mouseover", this.tooltipRender)
         .on("mousemove", () => {
           // Show the tooltip to the right of the mouse, unless we are
           // on the rightmost 25% of the browser.
@@ -454,12 +616,62 @@ export default class HearingMap extends Visualization {
           }
         })
         .on("mouseout", () => this.tooltip.style("visibility", "hidden"));
+      
+              // When a user clicks on a point, we will update the metadata pane. 
+      this.viz
+      .selectAll("circle:not(.legend)")
+      .on("click", this.renderMetadata);
 
-      // Zoom to the country when clicked and adjust the stroke width of the circle.
+
+    // When the point is clicked a second time, we reset the metadata pane.
+    this.viz
+      .selectAll("circle:not(.legend)")
+      .on("dblclick", this.resetMetadata);
+      };
+
+      // By default, we display all the data.
+      this.displayData();
+
+      // Watch for changes to the scout and year inputs. When they change, call
+      // the `displayData` function.
+      d3.select("#scouts_selection").on("change", () => {
+        const currentScout = d3.select("#scouts_selection").property("value");
+        const slider = d3.select("#timeline");
+        const currentYear = parseInt(slider.property("value"))
+        this.displayData(currentScout, currentYear);
+      });
+      d3.select("#timeline").on("change", () => {
+        const slider = d3.select("#timeline");
+        const currentYear = parseInt(slider.property("value"))
+        const currentScout = d3.select("#scouts_selection").property("value");
+        this.displayData(currentScout, currentYear);
+      });
+
+      // Display the tooltip on mouseover
       // this.viz
       //   .selectAll("circle:not(.legend)")
-      //   .on("click", (e, d) => this.zoom(e, d))
-      //   .style("stroke-width", 0.5);
+      //   .on("mouseover", this.tooltipRender)
+      //   .on("mousemove", () => {
+      //     // Show the tooltip to the right of the mouse, unless we are
+      //     // on the rightmost 25% of the browser.
+      //     if (event.clientX / this.width >= 0.75) {
+      //       this.tooltip
+      //         .style("top", `${event.pageY - 10}px`)
+      //         .style(
+      //           "left",
+      //           `${
+      //             event.pageX -
+      //             this.tooltip.node().getBoundingClientRect().width -
+      //             10
+      //           }px`
+      //         );
+      //     } else {
+      //       this.tooltip
+      //         .style("top", `${event.pageY - 10}px`)
+      //         .style("left", `${event.pageX + 10}px`);
+      //     }
+      //   })
+      //   .on("mouseout", () => this.tooltip.style("visibility", "hidden"));
 
       // Draw the legend.
       const legend = this.viz
@@ -517,7 +729,7 @@ export default class HearingMap extends Visualization {
             const currentYear = parseInt(slider.property("value"));
             const maxYear = parseInt(slider.property("max"));
             // Display the current year in year-range
-            // d3.select("#year-range").text(currentYear + 1);
+            d3.select("#body__year-range").text("in " + currentYear + 1);
             if (currentYear < maxYear) {
               slider.property("value", currentYear + 1);
               slider.dispatch("change");
@@ -538,14 +750,15 @@ export default class HearingMap extends Visualization {
       d3.select("#timeline").on("input", () => {
         const slider = d3.select("#timeline");
         const currentYear = parseInt(slider.property("value"));
-        d3.select("#body__year-range").text(currentYear);
+        d3.select("#body__year-range").text("in " + currentYear);
       });
 
       // If the reset button is pressed, reset to the timeline-label, display all points, and reset the dropdown.
       this.resetButton.addEventListener("click", () => {
-        d3.select("#body__year-range").text("1903-1926");
+        d3.select("#body__year-range").text("between 1903-1926");
         document.getElementById("timeline").value = 1903;
         document.getElementById("scouts_selection").value = "All";
+        this.resetMetadata();
         this.displayData();
       });
     });
