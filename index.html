@@ -3,6 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <title>Hearing the Americas</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
     <link rel="stylesheet" href="./dist/main.css" />
   </head>
   <body>
@@ -14,6 +15,13 @@
 
       <div class="display__metadata">
         <h1>Mapping Recordings</h1>
+        <details class="map__how_to">
+          <summary class="map__how_to_summary">
+            How to use this visualization
+          </summary>
+          <div class="map__how_to_description">Click on a point to see metadata about that specific point. Double-click on the point to return to the default view.</div>
+        </details>
+        <hr>
 
         <div class="map__dropdown_scouts" id="scouts-dropdown"></div>
 
@@ -38,18 +46,17 @@
         </div>
 
         <h2 class="metadata__title">Global</h2>
-        <p>Displaying data for <strong><span id="body__year-range">1903-1926</span></strong>.</p>
+        <p>These are the recordings made <strong><span id="body__year-range">between 1903-1926</span></strong>.</p>
+        <span class="metadata__panel">
+          <span class="metadata__recordings"></span>
+          <span class="metadata__scouts"></span>
+          <span class="metadata__years"></span>
+          <span class="metadata__dates"></span>
+        </span>
+
       </div>
 
     </div>
-
-
-    <details class="map__how_to">
-      <summary class="map__how_to_summary">
-        How to use this visualization
-      </summary>
-      <div class="map__how_to_description">lorem ipsum</div>
-    </details>
 
     <script type="module" src="./dist/index.js"></script>
   </body>
