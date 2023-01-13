@@ -117,6 +117,15 @@ export default class HearingMap extends Visualization {
         d3.select(".metadata__dates")
           .style("display", "none")
           .html("");
+        
+      // Finally, we need to check the "recordings" column to see if there's a URL to the audio
+      // clips. If there is, we embed the audio player in the metadata panel.
+      // If there is no URL, we hide the audio player.
+      if (d.recordings_url) {
+        d3.select(".metadata__audio")
+          .style("display", "block")
+          .html(`<audio controls><source src="${d.recordings_url}" type="audio/mpeg"></audio>`);
+      }
     };
 
     this.resetMetadata = () => {
@@ -206,6 +215,7 @@ export default class HearingMap extends Visualization {
             };
           }),
           recordings: +d.recordings,
+          recordings_url: d.recordings_url,
         };
       });
 
