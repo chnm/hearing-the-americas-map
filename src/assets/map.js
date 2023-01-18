@@ -121,19 +121,30 @@ export default class HearingMap extends Visualization {
       // Finally, we need to check the "recordings" column to see if there's a URL to the audio
       // clips. If there is, we embed the audio player in the metadata panel.
       // If there is no URL, we hide the audio player.
+      // Loop through the available recordings_url for a given year and display them all.
       if (d.recordings_url) {
-        d3.select(".metadata__audio")
-          .style("display", "block")
-          .html(`<audio controls><source src="${d.recordings_url}" type="audio/mpeg"></audio>`);
+        // for (let i = 0; i < d.recordings_url.length; i++) {
+          // TODO: this is throwing a 404 media error
+          d3.select(".metadata__audio")
+            .style("display", "block")
+            .html(`
+              <audio controls><source src="${d.recordings_url}" type="audio/mpeg"></audio><br/>
+              <a href="${d.recordings_url}">Omeka item</a>.`);
+        // }
+      }
+      // when there is no audio, hide the audio player
+      else {
+        d3.select(".metadata__audio").style("display", "none");
       }
     };
 
     this.resetMetadata = () => {
-      d3.select(".metadata__title").html("Global");
+      d3.select(".metadata__title").html("");
       d3.select(".metadata__recordings").html("");
       d3.select(".metadata__years").html("");
       d3.select(".metadata__scouts").html("");
       d3.select(".metadata__dates").html("");
+      d3.select(".metadata__audio").html("");
     };
 
     // Tooltip only displays the city and country on mouseover.
@@ -646,12 +657,14 @@ export default class HearingMap extends Visualization {
         const slider = d3.select("#timeline");
         const currentYear = parseInt(slider.property("value"))
         this.displayData(currentScout, currentYear);
+        this.resetMetadata();
       });
       d3.select("#timeline").on("change", () => {
         const slider = d3.select("#timeline");
         const currentYear = parseInt(slider.property("value"))
         const currentScout = d3.select("#scouts_selection").property("value");
         this.displayData(currentScout, currentYear);
+        this.resetMetadata();
       });
 
       // Draw the legend.
