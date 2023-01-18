@@ -64,67 +64,61 @@ export default class HearingMap extends Visualization {
     // and updates the righthand metadata panel. It takes the data from the
     // point that was clicked and uses it to update the metadata panel.
     this.renderMetadata = (e, d) => {
-      const formatTime = d3.timeFormat("%b %d, %Y");
+      const parseDate = d3.timeFormat("%b %d, %Y");
       const location = `${d.city}, ${d.country}`;
+      const cityName = d.city;
 
-      // The text avaiable for display in the metadata panel depends on
-      // whether there is data available to populate it. 
-      // If there is no data, the text will be empty and any labels will be hidden.
-      // Metadata will include the following fields:
-      // - Dates of visit
-      // - List of years when recordings were made
+      // Metadata includes the following fields:
+      // - Dates of visit (only for the recordings array)
+      // - List of years when recordings were made (only for the totalcities array)
       // - Number of recordings
       // - Scouts who visited the location
+      // - Music clips (recordings array for individual cities; the entire list for a city in totalcities)
 
-      const displayStartEndDates = `${formatTime(new Date(d.start_date))} - ${formatTime(new Date(d.end_date))}`;
-      // TODO: get the nested array of years from totalcities array
-      const displayYears = d.years ? d.years.map((year) => { return `<br> - ${year}`; }) : null;
+      const displayStartEndDates = `${parseDate(new Date(d.start_date))} to ${parseDate(new Date(d.end_date))}`;
+      const displayYears = d.years ? d.years.map((year) => { return `<br> - ${year}`; }).join("") : null;
       const displayRecordings = d.recordings;
-      // TODO: this isn't working yet
       const displayScouts = d.scouts ? Object.keys(d.scouts).map((key) => { return `<br> - ${d.scouts[key].name}`; }).join("") : null; 
 
-        // show the city and country
+      // Show the city and country
       d3.select(".metadata__title").html(location);
 
-      // display the number of recordings, if the data is not empty
+      // Display the number of recordings, if the data is not empty
       d3.select(".metadata__recordings")
         .style("display", displayRecordings ? "block" : "none")
         .html(`<strong>Number of recordings:</strong> ${displayRecordings}`);
       
-      // if recordings are 0, display "unknown"
+      // If recordings are 0, display "unknown"
       if (displayRecordings === 0) {
         d3.select(".metadata__recordings")
           .style("display", "block")
           .html(`<strong>Number of recordings:</strong> Unknown`);
       }
 
-      // display the years, if the data is not empty
-      d3.select(".metadata__years")
-        .style("display", displayYears ? "block" : "none")
-        .html(`<strong>Years:</strong> ${displayYears}`);
+      // Displaying the date information depends on whether the 
+      // totalcities array or the recordings array is being used.
+      // We determine which array is active by checking if there are values 
+      // in d.start_date, which are absent in totalcities. If not, we display the 
+      // list of years. Otherwise, the date range.
+      if (d.start_date) {
+        d3.select(".metadata__years")
+          .style("display", "none");
+        d3.select(".metadata__dates")
+          .style("display", "block")
+          .html(`<strong>Dates of visit:</strong> ${displayStartEndDates}`);
+      } else {
+        d3.select(".metadata__years")
+          .style("display", "block")
+          .html(`<strong>Years that ${cityName} was visited:</strong> ${displayYears}`);
+        d3.select(".metadata__dates")
+          .style("display", "none");
+      }
 
-      // display the scouts, if the data is not empty
+      // Display the scouts, if the data is not empty
       d3.select(".metadata__scouts")
         .style("display", displayScouts ? "block" : "none")
         .html(`<strong>Scouts:</strong> ${displayScouts}`);
-      
-      // display the start and end dates, if the data is not empty
-      // this is only displayed if the scouts_selection is not "All"
-      const selectedScouts = document.getElementById("scouts_selection").value;
-      const selectedYear = document.getElementById("timeline").value;
-      if (selectedScouts !== "All") {
-        d3.select(".metadata__dates")
-          .style("display", displayStartEndDates ? "block" : "none")
-          .html(`<strong>Dates of visit:</strong> ${displayStartEndDates}`);
-      } else if (selectedScouts === "All" && selectedYear !== undefined && selectedYear !== "All") {
-        d3.select(".metadata__dates")
-          .style("display", displayStartEndDates ? "block" : "none")
-          .html(`<strong>Dates of visit:</strong> ${displayStartEndDates}`);
-      } else if (selectedScouts === "All" && selectedYear === 1902)
-        d3.select(".metadata__dates")
-          .style("display", "none")
-          .html("");
-        
+ 
       // Finally, we need to check the "recordings" column to see if there's a URL to the audio
       // clips. If there is, we embed the audio player in the metadata panel.
       // If there is no URL, we hide the audio player.
@@ -159,7 +153,7 @@ export default class HearingMap extends Visualization {
       const formatTime = d3.timeFormat("%b %d, %Y");
       const text =
         `<strong>${d.city}, ${d.country}</strong><br>
-        Click on a point to view it's data<br/> or listen to music clips if they're available. Double-click to<br/> reset the metadata.`;
+        Click on a point to view it's data<br/> or listen to music clips if they're available. Double-click to<br/> reset the data.`;
       this.tooltip.html(text);
       this.tooltip.style("visibility", "visible");
     };
@@ -316,7 +310,9 @@ export default class HearingMap extends Visualization {
             lat: recording.lat,
             lon: recording.lon,
             city: recording.city,
-            country: recording.country
+            country: recording.country,
+            years: recording.years,
+            scouts: recording.scouts,
           };
         }
       });
@@ -375,9 +371,6 @@ export default class HearingMap extends Visualization {
       totaldata.push({ totalcities: Object.entries(recordingsPerCity) });
       totaldata.push({ recordings: recordings });
 
-      // TODO: Remove this.
-      console.log(totaldata);
-
       // The function to display all data.
       this.displayAllData = () => {
         // We display data from `totalcities`
@@ -388,6 +381,8 @@ export default class HearingMap extends Visualization {
             lat: d[1].lat,
             lon: d[1].lon,
             recordings: d[1].recordings,
+            years: d[1].years,
+            scouts: d[1].scouts
           };
         });
 
