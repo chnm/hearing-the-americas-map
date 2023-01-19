@@ -122,20 +122,31 @@ export default class HearingMap extends Visualization {
       // Finally, we need to check the "recordings" column to see if there's a URL to the audio
       // clips. If there is, we embed the audio player in the metadata panel.
       // If there is no URL, we hide the audio player.
-      // Loop through the available recordings_url for a given year and display them all.
       if (d.recordings_url) {
-        // for (let i = 0; i < d.recordings_url.length; i++) {
-          // TODO: this is throwing a 404 media error
           d3.select(".metadata__audio")
             .style("display", "block")
             .html(`
               <audio controls><source src="${d.recordings_url}" type="audio/mpeg"></audio><br/>
-              <a href="${d.recordings_url}">Omeka item</a>.`);
-        // }
+              "<a href="${d.omeka_item_url}">${d.omeka_title}</a>", ${d.omeka_creator}.`);
       }
       // when there is no audio, hide the audio player
       else {
         d3.select(".metadata__audio").style("display", "none");
+      }
+
+      // When the map is displaying allData, we want to show the list of available clips
+      // for a city in the metadata pane. The array of clips are in the omeka object.
+      if (!d.omeka) {
+        d3.select(".metadata__audio").style("display", "none");
+      } else {
+        d3.select(".metadata__audio")
+          .style("display", "block")
+          .html(`
+            ${d.omeka.map((clip) => {
+              return `
+                <audio controls><source src="${clip.recordings_url}" type="audio/mpeg"></audio><br/>
+                "<a href="${clip.item_url}">${clip.title}</a>", ${clip.creator}.<br/><br/>`;
+            }).join("")}`);
       }
     };
 
@@ -153,7 +164,7 @@ export default class HearingMap extends Visualization {
       const formatTime = d3.timeFormat("%b %d, %Y");
       const text =
         `<strong>${d.city}, ${d.country}</strong><br>
-        Click on a point to view it's data<br/> or listen to music clips if they're available. Double-click to<br/> reset the data.`;
+        Click on a point to see how many recordings were made <br/>in each city and when and to listen to examples. Double-click <br/>to return to the totals for Latin America as a whole.`;
       this.tooltip.html(text);
       this.tooltip.style("visibility", "visible");
     };
@@ -228,8 +239,9 @@ export default class HearingMap extends Visualization {
           }),
           recordings: +d.recordings,
           recordings_url: d.recordings_url,
-          omeka_title: "",
-          omeka_creator: "",
+          omeka_title: d.omeka_title,
+          omeka_creator: d.omeka_creator,
+          omeka_item_url: d.omeka_item_url,
         };
       });
 
@@ -297,6 +309,17 @@ export default class HearingMap extends Visualization {
         }
       });
 
+      // We add the omeka_title, omeka_creator, omeka_item_url, and recordings_url to the
+      // recordings object in an omeka property.
+      recordings.forEach((recording) => {
+        recording.omeka = {
+          title: recording.omeka_title,
+          creator: recording.omeka_creator,
+          item_url: recording.omeka_item_url,
+          recordings_url: recording.recordings_url,
+        };
+      });
+
       // We also need to determine recordings per city. This will be used in the selection of
       // "All" in the dropdown.
       const recordingsPerCity = {};
@@ -312,8 +335,36 @@ export default class HearingMap extends Visualization {
             city: recording.city,
             country: recording.country,
             years: recording.years,
-            scouts: recording.scouts,
+            scouts: recording.scouts
           };
+        }
+      });
+
+      // We add the Omeka title, creator, item_url, and recordings_url to the 
+      // recordingsPerCity object.
+      recordings.forEach((recording) => {
+        const key = `${recording.city.trim()}`;
+        if (recordingsPerCity[key]) {
+          if (recordingsPerCity[key].omeka) {
+            if (recording.omeka_title && recording.omeka_creator && recording.omeka_item_url) {
+              recordingsPerCity[key].omeka.push({
+                title: recording.omeka_title,
+                creator: recording.omeka_creator,
+                item_url: recording.omeka_item_url,
+                recordings_url: recording.recordings_url
+              });
+            }
+          } else {
+            recordingsPerCity[key].omeka = [];
+            if (recording.omeka_title && recording.omeka_creator && recording.omeka_item_url) {
+              recordingsPerCity[key].omeka.push({
+                title: recording.omeka_title,
+                creator: recording.omeka_creator,
+                item_url: recording.omeka_item_url,
+                recordings_url: recording.recordings_url
+              });
+            }
+          }
         }
       });
 
@@ -371,6 +422,8 @@ export default class HearingMap extends Visualization {
       totaldata.push({ totalcities: Object.entries(recordingsPerCity) });
       totaldata.push({ recordings: recordings });
 
+      console.log(totaldata);
+
       // The function to display all data.
       this.displayAllData = () => {
         // We display data from `totalcities`
@@ -382,7 +435,8 @@ export default class HearingMap extends Visualization {
             lon: d[1].lon,
             recordings: d[1].recordings,
             years: d[1].years,
-            scouts: d[1].scouts
+            scouts: d[1].scouts,
+            omeka: d[1].omeka
           };
         });
 
@@ -495,7 +549,6 @@ export default class HearingMap extends Visualization {
           // we filter the data by d.years array to see if the year(s) are included.
           return d.years.some((y) => y === year);
         });
-        console.log(yearData);
         // We then display the data.
         this.viz
           .selectAll("circle")
