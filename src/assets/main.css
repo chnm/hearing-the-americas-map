@@ -76,6 +76,13 @@ hr {
   fill-opacity: 1;
 }
 
+.point text.clip {
+  fill: #fff;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-anchor: middle;
+}
+
 .tooltip {
   background: rgba(101, 104, 109, 0.9);
   border-radius: 0.2rem;
