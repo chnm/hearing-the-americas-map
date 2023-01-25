@@ -161,11 +161,14 @@ export default class HearingMap extends Visualization {
 
     // Tooltip only displays the city and country on mouseover.
     this.tooltipRender = (e, d) => {
-      const formatTime = d3.timeFormat("%b %d, %Y");
       const text =
-        `<strong>${d.city}, ${d.country}</strong><br>
-        Click on a point to see how many recordings were made <br/>in each city and when and to listen to examples. Double-click <br/>to return to the totals for Latin America as a whole.`;
-      this.tooltip.html(text);
+        `<strong>${d.city}, ${d.country}</strong> 
+        ${d.omeka.length ? " <span style='font-size: 18px;'>𝇇</span> " : ""}
+        <br>
+        Click on a point to see how many recordings were made <br/>
+        in each city and when and to listen to examples. Double-click <br/>
+        to return to the totals for Latin America as a whole.`;
+      this.tooltip.html(text);      
       this.tooltip.style("visibility", "visible");
     };
   }
@@ -449,7 +452,7 @@ export default class HearingMap extends Visualization {
           .attr("cy", (d) => this.projection([d.lon, d.lat])[1])
           .attr("r", (d) => this.radius(d.recordings))
           .attr("class", "point");
-        
+
         // We reattach the tooltip.
         this.viz
         .selectAll("circle:not(.legend)")
