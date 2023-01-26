@@ -225,6 +225,8 @@ export default class HearingMap extends Visualization {
         .domain([0, d3.max(data, (d) => d.recordings)])
         .range([0, this.maxRadius]);
 
+      // console.log(this.radius(1400));
+
       // Create a new array of objects
       const recordings = data.map((d) => {
         return {
@@ -445,7 +447,7 @@ export default class HearingMap extends Visualization {
 
         // We then display the data.
         this.viz
-          .selectAll("circle")
+          .selectAll("circle:not(.legend)")
           .data(allData)
           .join("circle")
           .attr("cx", (d) => this.projection([d.lon, d.lat])[0])
@@ -499,7 +501,7 @@ export default class HearingMap extends Visualization {
         });
         // We then display the data.
         this.viz
-          .selectAll("circle")
+          .selectAll("circle:not(.legend)")
           .data(scoutData)
           .join("circle")
           .attr("cx", (d) => this.projection([d.lon, d.lat])[0])
@@ -554,7 +556,7 @@ export default class HearingMap extends Visualization {
         });
         // We then display the data.
         this.viz
-          .selectAll("circle")
+          .selectAll("circle:not(.legend)")
           .data(yearData)
           .join("circle")
           .attr("cx", (d) => this.projection([d.lon, d.lat])[0])
@@ -619,7 +621,7 @@ export default class HearingMap extends Visualization {
         });
         // We then display the data.
         this.viz
-          .selectAll("circle")
+          .selectAll("circle:not(.legend)")
           .data(scoutYearData)
           .join("circle")
           .attr("cx", (d) => this.projection([d.lon, d.lat])[0])
@@ -753,22 +755,22 @@ export default class HearingMap extends Visualization {
       // Draw the legend.
       const legend = this.viz
         .append("g")
-        .attr("fill", "#777")
         .attr(
           "transform",
-          `translate(${this.width - this.maxRadius - 10},${this.height - 10})`
+          `translate(${this.width - this.maxRadius - 80},${this.height - 10})`
         )
         .attr("text-anchor", "middle")
         .style("font", "10px sans-serif")
+        .style("fill", "#264653")
         .selectAll("g")
-        .data(this.radius.ticks(4).slice(1))
+        .data([0, 200, 500, 1000, 1500, 2000, 2500].slice(1))
         .join("g")
         .classed("legend", true);
 
       legend
         .append("circle")
         .attr("fill", "none")
-        .attr("stroke", "#ccc")
+        .attr("stroke", "#264653")
         .attr("cy", (d) => -this.radius(d))
         .attr("r", this.radius)
         .classed("legend", true);
@@ -776,14 +778,15 @@ export default class HearingMap extends Visualization {
       legend
         .append("text")
         .attr("y", (d) => -2 * this.radius(d))
-        .attr("dy", "1.3em")
+        .attr("dy", "1em")
         .text(this.radius.tickFormat(4, "s"));
 
       legend
         .append("text")
         .attr("y", -this.radius.range()[1])
-        .attr("dy", "-0.7em")
-        .text("Recordings");
+        .attr("dy", "2em")
+        .text("Number of recordings");
+  
       
       // TODO: If a user's filters return no data, display a message on the map.
       // This will be true for both scouts and years.
