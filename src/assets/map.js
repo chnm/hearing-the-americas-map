@@ -164,6 +164,7 @@ export default class HearingMap extends Visualization {
       const text =
         `<strong>${d.city}, ${d.country}</strong> 
         ${d.omeka.length ? " <span style='font-size: 18px;'>𝇇</span> " : ""}
+        ${d.omeka.recordings_url ? " <span style='font-size: 18px;'>𝇇</span> " : ""}
         <br>
         Click on a point to see how many recordings were made in <br/>
         each city and when. In some cases, there are recordings <br/>
