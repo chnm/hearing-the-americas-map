@@ -165,9 +165,10 @@ export default class HearingMap extends Visualization {
         `<strong>${d.city}, ${d.country}</strong> 
         ${d.omeka.length ? " <span style='font-size: 18px;'>𝇇</span> " : ""}
         <br>
-        Click on a point to see how many recordings were made <br/>
-        in each city and when and to listen to examples. Double-click <br/>
-        to return to the totals for Latin America as a whole.`;
+        Click on a point to see how many recordings were made in <br/>
+        each city and when. In some cases, there are recordings <br/>
+        available for listening. Double-click to return to <br/>
+        the totals for Latin America as a whole.`;
       this.tooltip.html(text);      
       this.tooltip.style("visibility", "visible");
     };
