@@ -142,7 +142,7 @@ export default class HearingMap extends Visualization {
             .style("display", "block")
             .html(`
               <audio controls><source src="${d.recordings_url}" type="audio/mpeg"></audio><br/>
-              "<a href="${d.omeka_item_url}">${d.omeka_title}</a>", ${d.omeka_creator}.`);
+              "<a href="${d.omeka_item_url}">${d.omeka_title}</a>", ${d.omeka_creator} (${d.omeka_item_year}).`);
         }
       };
 
@@ -170,7 +170,7 @@ export default class HearingMap extends Visualization {
             ${d.omeka.map((clip) => {
               return `
                 <audio controls><source src="${clip.recordings_url}" type="audio/mpeg"></audio><br/>
-                "<a href="${clip.item_url}">${clip.title}</a>", ${clip.creator}.<br/><br/>`;
+                "<a href="${clip.item_url}">${clip.title}</a>", ${clip.creator} (${clip.item_year}).<br/><br/>`;
             }).join("")}`);
       }
     };
@@ -274,6 +274,7 @@ export default class HearingMap extends Visualization {
           omeka_title: d.omeka_title,
           omeka_creator: d.omeka_creator,
           omeka_item_url: d.omeka_item_url,
+          omeka_item_year: d.omeka_item_year,
         };
       });
 
@@ -349,6 +350,7 @@ export default class HearingMap extends Visualization {
           creator: recording.omeka_creator,
           item_url: recording.omeka_item_url,
           recordings_url: recording.recordings_url,
+          item_year: recording.omeka_item_year
         };
       });
 
@@ -383,7 +385,8 @@ export default class HearingMap extends Visualization {
                 title: recording.omeka_title,
                 creator: recording.omeka_creator,
                 item_url: recording.omeka_item_url,
-                recordings_url: recording.recordings_url
+                recordings_url: recording.recordings_url,
+                item_year: recording.omeka_item_year
               });
             }
           } else {
@@ -393,7 +396,8 @@ export default class HearingMap extends Visualization {
                 title: recording.omeka_title,
                 creator: recording.omeka_creator,
                 item_url: recording.omeka_item_url,
-                recordings_url: recording.recordings_url
+                recordings_url: recording.recordings_url,
+                item_year: recording.omeka_item_year
               });
             }
           }
