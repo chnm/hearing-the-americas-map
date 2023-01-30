@@ -118,26 +118,14 @@ export default class HearingMap extends Visualization {
       d3.select(".metadata__scouts")
         .style("display", displayScouts ? "block" : "none")
         .html(`<strong>Scouts:</strong> ${displayScouts}`);
- 
-      // Finally, we need to check the "recordings" column to see if there's a URL to the audio
-      // clips. If there is, we embed the audio player in the metadata panel.
-      // If there is no URL, we hide the audio player.
-      // if (d.recordings_url || d.recordings_url !== "") {
-      //     d3.select(".metadata__audio")
-      //       .style("display", "block")
-      //       .html(`
-      //         <audio controls><source src="${d.recordings_url}" type="audio/mpeg"></audio><br/>
-      //         "<a href="${d.omeka_item_url}">${d.omeka_title}</a>", ${d.omeka_creator}.`);
-      // } else {
-      //   // when there is no audio, hide the audio player
-      //   d3.select(".metadata__audio").style("display", "none");
-      // }
 
       // This function creates the audio player and embeds it in the metadata panel.
-      // If d.recordings_url or d.omeka.recordings_url is not empty, it will create the player.
+      // If d.omeka is not empty, it will create the player.
       const displayAudioPlayer = (d) => {
         // If there is a URL to the audio clip, we create the audio player
-        if (d.recordings_url || d.recordings_url !== "") {
+        if (!d.omeka) {
+          d3.select(".metadata__audio").style("display", "none");
+        } else {
           d3.select(".metadata__audio")
             .style("display", "block")
             .html(`
@@ -155,9 +143,6 @@ export default class HearingMap extends Visualization {
       // create a new one if the data is available.
       removeAudioPlayer();
       displayAudioPlayer(d);
-
-      // // Call the function to display the audio player
-      // displayAudioPlayer(d);
 
       // When the map is displaying allData, we want to show the list of available clips
       // for a city in the metadata pane. The array of clips are in the omeka object.
@@ -343,15 +328,22 @@ export default class HearingMap extends Visualization {
       });
 
       // We add the omeka_title, omeka_creator, omeka_item_url, and recordings_url to the
-      // recordings object in an omeka property.
+      // recordings object in an omeka property. If there is no data,
+      // we return an empty omeka array.
       recordings.forEach((recording) => {
-        recording.omeka = {
-          title: recording.omeka_title,
-          creator: recording.omeka_creator,
-          item_url: recording.omeka_item_url,
-          recordings_url: recording.recordings_url,
-          item_year: recording.omeka_item_year
-        };
+        if (recording.omeka_title) {
+          recording.omeka = [
+            {
+              title: recording.omeka_title,
+              creator: recording.omeka_creator,
+              item_url: recording.omeka_item_url,
+              recordings_url: recording.recordings_url,
+              item_year: recording.omeka_item_year,
+            },
+          ];
+        } else {
+          recording.omeka = [];
+        }
       });
 
       // We also need to determine recordings per city. This will be used in the selection of
@@ -512,7 +504,7 @@ export default class HearingMap extends Visualization {
         })
         .on("mouseout", () => this.tooltip.style("visibility", "hidden"));
 
-              // When a user clicks on a point, we will update the metadata pane. 
+      // When a user clicks on a point, we will update the metadata pane. 
       this.viz
       .selectAll("circle:not(.legend)")
       .on("click", this.renderMetadata);
