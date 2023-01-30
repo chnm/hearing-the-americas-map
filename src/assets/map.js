@@ -122,17 +122,42 @@ export default class HearingMap extends Visualization {
       // Finally, we need to check the "recordings" column to see if there's a URL to the audio
       // clips. If there is, we embed the audio player in the metadata panel.
       // If there is no URL, we hide the audio player.
-      if (d.recordings_url) {
+      // if (d.recordings_url || d.recordings_url !== "") {
+      //     d3.select(".metadata__audio")
+      //       .style("display", "block")
+      //       .html(`
+      //         <audio controls><source src="${d.recordings_url}" type="audio/mpeg"></audio><br/>
+      //         "<a href="${d.omeka_item_url}">${d.omeka_title}</a>", ${d.omeka_creator}.`);
+      // } else {
+      //   // when there is no audio, hide the audio player
+      //   d3.select(".metadata__audio").style("display", "none");
+      // }
+
+      // This function creates the audio player and embeds it in the metadata panel.
+      // If d.recordings_url or d.omeka.recordings_url is not empty, it will create the player.
+      const displayAudioPlayer = (d) => {
+        // If there is a URL to the audio clip, we create the audio player
+        if (d.recordings_url || d.recordings_url !== "") {
           d3.select(".metadata__audio")
             .style("display", "block")
             .html(`
               <audio controls><source src="${d.recordings_url}" type="audio/mpeg"></audio><br/>
               "<a href="${d.omeka_item_url}">${d.omeka_title}</a>", ${d.omeka_creator}.`);
-      }
-      // when there is no audio, hide the audio player
-      else {
+        }
+      };
+
+      // This function removes the audio player from the metadata panel.
+      const removeAudioPlayer = () => {
         d3.select(".metadata__audio").style("display", "none");
-      }
+      };
+
+      // We call both functions to first remove an existing audio player, then
+      // create a new one if the data is available.
+      removeAudioPlayer();
+      displayAudioPlayer(d);
+
+      // // Call the function to display the audio player
+      // displayAudioPlayer(d);
 
       // When the map is displaying allData, we want to show the list of available clips
       // for a city in the metadata pane. The array of clips are in the omeka object.
@@ -506,10 +531,11 @@ export default class HearingMap extends Visualization {
           .selectAll("circle:not(.legend)")
           .data(scoutData)
           .join("circle")
-          .attr("cx", (d) => this.projection([d.lon, d.lat])[0])
-          .attr("cy", (d) => this.projection([d.lon, d.lat])[1])
+          .attr("cx", (d) => this.projection([d.lon, d.lat])[0] - Math.random() * this.jitter)
+          .attr("cy", (d) => this.projection([d.lon, d.lat])[1] - Math.random() * this.jitter)
           .attr("r", (d) => this.radius(d.recordings))
-          .attr("class", "point");
+          .attr("class", "point")
+          .sort((a, b) => b.recordings - a.recordings);
         
         // We reattach the tooltip.
         this.viz
@@ -537,11 +563,20 @@ export default class HearingMap extends Visualization {
         })
         .on("mouseout", () => this.tooltip.style("visibility", "hidden"));
 
-              // When a user clicks on a point, we will update the metadata pane. 
+      // When a user clicks on a point, we will update the metadata pane. 
       this.viz
       .selectAll("circle:not(.legend)")
       .on("click", this.renderMetadata);
-
+    
+      // When a user clicks on a point, we hide the "time_span_note" span until
+      // the user resets the metadata.
+      this.viz
+      .selectAll("circle:not(.legend)")
+      .on("click", () => {
+        this.metadata
+          .select("#time_span_note")
+          .style("visibility", "hidden");
+      });
 
     // When the point is clicked a second time, we reset the metadata pane.
     this.viz
@@ -621,6 +656,7 @@ export default class HearingMap extends Visualization {
             d.scouts.some((s) => s.name.trim() === scout) && d.years.some((y) => y === year)
           );
         });
+        
         // We then display the data.
         this.viz
           .selectAll("circle:not(.legend)")
@@ -629,7 +665,8 @@ export default class HearingMap extends Visualization {
           .attr("cx", (d) => this.projection([d.lon, d.lat])[0])
           .attr("cy", (d) => this.projection([d.lon, d.lat])[1])
           .attr("r", (d) => this.radius(d.recordings))
-          .attr("class", "point");
+          .attr("class", "point")
+          .sort((a, b) => b.recordings - a.recordings);
         
         // We reattach the tooltip.
         this.viz
