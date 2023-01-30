@@ -142,7 +142,7 @@ export default class HearingMap extends Visualization {
         } else {
           d3.select(".metadata__audio").style("display", "block").html(`
               <audio controls><source src="${d.recordings_url}" type="audio/mpeg"></audio><br/>
-              "<a href="${d.omeka_item_url}">${d.omeka_title}</a>", ${d.omeka_creator} (${d.omeka_item_year}).`);
+              ${d.omeka_creator}, "<a href="${d.omeka_item_url}">${d.omeka_title}</a>" (${d.omeka_item_year}).`);
         }
       };
 
@@ -166,7 +166,7 @@ export default class HearingMap extends Visualization {
               .map((clip) => {
                 return `
                 <audio controls><source src="${clip.recordings_url}" type="audio/mpeg"></audio><br/>
-                "<a href="${clip.item_url}">${clip.title}</a>", ${clip.creator} (${clip.item_year}).<br/><br/>`;
+                ${clip.creator}, "<a href="${clip.item_url}">${clip.title}</a>" (${clip.item_year}).<br/><br/>`;
               })
               .join("")}`);
       }
