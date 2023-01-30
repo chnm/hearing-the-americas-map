@@ -75,10 +75,24 @@ export default class HearingMap extends Visualization {
       // - Scouts who visited the location
       // - Music clips (recordings array for individual cities; the entire list for a city in totalcities)
 
-      const displayStartEndDates = `${parseDate(new Date(d.start_date))} to ${parseDate(new Date(d.end_date))}`;
-      const displayYears = d.years ? d.years.map((year) => { return `<br> - ${year}`; }).join("") : null;
+      const displayStartEndDates = `${parseDate(
+        new Date(d.start_date)
+      )} to ${parseDate(new Date(d.end_date))}`;
+      const displayYears = d.years
+        ? d.years
+            .map((year) => {
+              return `<br> - ${year}`;
+            })
+            .join("")
+        : null;
       const displayRecordings = d.recordings;
-      const displayScouts = d.scouts ? Object.keys(d.scouts).map((key) => { return `<br> - ${d.scouts[key].name}`; }).join("") : null; 
+      const displayScouts = d.scouts
+        ? Object.keys(d.scouts)
+            .map((key) => {
+              return `<br> - ${d.scouts[key].name}`;
+            })
+            .join("")
+        : null;
 
       // Show the city and country
       d3.select(".metadata__title").html(location);
@@ -87,7 +101,7 @@ export default class HearingMap extends Visualization {
       d3.select(".metadata__recordings")
         .style("display", displayRecordings ? "block" : "none")
         .html(`<strong>Number of recordings:</strong> ${displayRecordings}`);
-      
+
       // If recordings are 0, display "unknown"
       if (displayRecordings === 0) {
         d3.select(".metadata__recordings")
@@ -95,23 +109,23 @@ export default class HearingMap extends Visualization {
           .html(`<strong>Number of recordings:</strong> Unknown`);
       }
 
-      // Displaying the date information depends on whether the 
+      // Displaying the date information depends on whether the
       // totalcities array or the recordings array is being used.
-      // We determine which array is active by checking if there are values 
-      // in d.start_date, which are absent in totalcities. If not, we display the 
+      // We determine which array is active by checking if there are values
+      // in d.start_date, which are absent in totalcities. If not, we display the
       // list of years. Otherwise, the date range.
       if (d.start_date) {
-        d3.select(".metadata__years")
-          .style("display", "none");
+        d3.select(".metadata__years").style("display", "none");
         d3.select(".metadata__dates")
           .style("display", "block")
           .html(`<strong>Dates of visit:</strong> ${displayStartEndDates}`);
       } else {
         d3.select(".metadata__years")
           .style("display", "block")
-          .html(`<strong>Years that ${cityName} was visited:</strong> ${displayYears}`);
-        d3.select(".metadata__dates")
-          .style("display", "none");
+          .html(
+            `<strong>Years that ${cityName} was visited:</strong> ${displayYears}`
+          );
+        d3.select(".metadata__dates").style("display", "none");
       }
 
       // Display the scouts, if the data is not empty
@@ -126,9 +140,7 @@ export default class HearingMap extends Visualization {
         if (!d.omeka) {
           d3.select(".metadata__audio").style("display", "none");
         } else {
-          d3.select(".metadata__audio")
-            .style("display", "block")
-            .html(`
+          d3.select(".metadata__audio").style("display", "block").html(`
               <audio controls><source src="${d.recordings_url}" type="audio/mpeg"></audio><br/>
               "<a href="${d.omeka_item_url}">${d.omeka_title}</a>", ${d.omeka_creator} (${d.omeka_item_year}).`);
         }
@@ -149,14 +161,14 @@ export default class HearingMap extends Visualization {
       if (!d.omeka) {
         d3.select(".metadata__audio").style("display", "none");
       } else {
-        d3.select(".metadata__audio")
-          .style("display", "block")
-          .html(`
-            ${d.omeka.map((clip) => {
-              return `
+        d3.select(".metadata__audio").style("display", "block").html(`
+            ${d.omeka
+              .map((clip) => {
+                return `
                 <audio controls><source src="${clip.recordings_url}" type="audio/mpeg"></audio><br/>
                 "<a href="${clip.item_url}">${clip.title}</a>", ${clip.creator} (${clip.item_year}).<br/><br/>`;
-            }).join("")}`);
+              })
+              .join("")}`);
       }
     };
 
@@ -171,16 +183,19 @@ export default class HearingMap extends Visualization {
 
     // Tooltip only displays the city and country on mouseover.
     this.tooltipRender = (e, d) => {
-      const text =
-        `<strong>${d.city}, ${d.country}</strong> 
+      const text = `<strong>${d.city}, ${d.country}</strong> 
         ${d.omeka.length ? " <span style='font-size: 18px;'>𝇇</span> " : ""}
-        ${d.omeka.recordings_url ? " <span style='font-size: 18px;'>𝇇</span> " : ""}
+        ${
+          d.omeka.recordings_url
+            ? " <span style='font-size: 18px;'>𝇇</span> "
+            : ""
+        }
         <br>
         Click on a point to see how many recordings were made in <br/>
         each city and when. In some cases, there are recordings <br/>
         available for listening. Double-click to return to <br/>
         the totals for Latin America as a whole.`;
-      this.tooltip.html(text);      
+      this.tooltip.html(text);
       this.tooltip.style("visibility", "visible");
     };
   }
@@ -315,11 +330,15 @@ export default class HearingMap extends Visualization {
         const yearRange = [];
         // add the yearRange as a years array to the recording object
         recording.years = yearRange;
-        // if the recording has a start_date for a particular city [key], we add the range of 
+        // if the recording has a start_date for a particular city [key], we add the range of
         // years to the yearRange array
         if (recording.start_date) {
-          for (let i = recording.start_date.substring(0, 4); i <= recording.end_date.substring(0, 4); i++) {
-            yearRange.push(+i);            
+          for (
+            let i = recording.start_date.substring(0, 4);
+            i <= recording.end_date.substring(0, 4);
+            i++
+          ) {
+            yearRange.push(+i);
           }
         } else {
           // if the recording does not have a start_date, we add the year to the yearRange array
@@ -361,35 +380,43 @@ export default class HearingMap extends Visualization {
             city: recording.city,
             country: recording.country,
             years: recording.years,
-            scouts: recording.scouts
+            scouts: recording.scouts,
           };
         }
       });
 
-      // We add the Omeka title, creator, item_url, and recordings_url to the 
+      // We add the Omeka title, creator, item_url, and recordings_url to the
       // recordingsPerCity object.
       recordings.forEach((recording) => {
         const key = `${recording.city.trim()}`;
         if (recordingsPerCity[key]) {
           if (recordingsPerCity[key].omeka) {
-            if (recording.omeka_title && recording.omeka_creator && recording.omeka_item_url) {
+            if (
+              recording.omeka_title &&
+              recording.omeka_creator &&
+              recording.omeka_item_url
+            ) {
               recordingsPerCity[key].omeka.push({
                 title: recording.omeka_title,
                 creator: recording.omeka_creator,
                 item_url: recording.omeka_item_url,
                 recordings_url: recording.recordings_url,
-                item_year: recording.omeka_item_year
+                item_year: recording.omeka_item_year,
               });
             }
           } else {
             recordingsPerCity[key].omeka = [];
-            if (recording.omeka_title && recording.omeka_creator && recording.omeka_item_url) {
+            if (
+              recording.omeka_title &&
+              recording.omeka_creator &&
+              recording.omeka_item_url
+            ) {
               recordingsPerCity[key].omeka.push({
                 title: recording.omeka_title,
                 creator: recording.omeka_creator,
                 item_url: recording.omeka_item_url,
                 recordings_url: recording.recordings_url,
-                item_year: recording.omeka_item_year
+                item_year: recording.omeka_item_year,
               });
             }
           }
@@ -423,7 +450,7 @@ export default class HearingMap extends Visualization {
       // We will append to the recordingsPerCity an array of each year
       // that a recording was made in that city. We will parse the yyyy-mm-dd
       // for the yyyy value and push it to the array, returning only those years
-      // that a recording was made for that city. Then, we'll return just unique 
+      // that a recording was made for that city. Then, we'll return just unique
       // values of the array.
       recordings.forEach((recording) => {
         const key = `${recording.city.trim()}`;
@@ -441,7 +468,7 @@ export default class HearingMap extends Visualization {
           };
         }
       });
- 
+
       // Now, we add the recordingsPerScout object and recordingsPerCity object to the
       // recordings array as new properties at the end of the array. It also needs to
       // be an array of objects, so we use Object.entries() to convert it to an array of
@@ -464,7 +491,7 @@ export default class HearingMap extends Visualization {
             recordings: d[1].recordings,
             years: d[1].years,
             scouts: d[1].scouts,
-            omeka: d[1].omeka
+            omeka: d[1].omeka,
           };
         });
 
@@ -480,40 +507,39 @@ export default class HearingMap extends Visualization {
 
         // We reattach the tooltip.
         this.viz
-        .selectAll("circle:not(.legend)")
-        .on("mouseover", this.tooltipRender)
-        .on("mousemove", () => {
-          // Show the tooltip to the right of the mouse, unless we are
-          // on the rightmost 25% of the browser.
-          if (event.clientX / this.width >= 0.75) {
-            this.tooltip
-              .style("top", `${event.pageY - 10}px`)
-              .style(
-                "left",
-                `${
-                  event.pageX -
-                  this.tooltip.node().getBoundingClientRect().width -
-                  10
-                }px`
-              );
-          } else {
-            this.tooltip
-              .style("top", `${event.pageY - 10}px`)
-              .style("left", `${event.pageX + 10}px`);
-          }
-        })
-        .on("mouseout", () => this.tooltip.style("visibility", "hidden"));
+          .selectAll("circle:not(.legend)")
+          .on("mouseover", this.tooltipRender)
+          .on("mousemove", () => {
+            // Show the tooltip to the right of the mouse, unless we are
+            // on the rightmost 25% of the browser.
+            if (event.clientX / this.width >= 0.75) {
+              this.tooltip
+                .style("top", `${event.pageY - 10}px`)
+                .style(
+                  "left",
+                  `${
+                    event.pageX -
+                    this.tooltip.node().getBoundingClientRect().width -
+                    10
+                  }px`
+                );
+            } else {
+              this.tooltip
+                .style("top", `${event.pageY - 10}px`)
+                .style("left", `${event.pageX + 10}px`);
+            }
+          })
+          .on("mouseout", () => this.tooltip.style("visibility", "hidden"));
 
-      // When a user clicks on a point, we will update the metadata pane. 
-      this.viz
-      .selectAll("circle:not(.legend)")
-      .on("click", this.renderMetadata);
+        // When a user clicks on a point, we will update the metadata pane.
+        this.viz
+          .selectAll("circle:not(.legend)")
+          .on("click", this.renderMetadata);
 
-
-    // When the point is clicked a second time, we reset the metadata pane.
-    this.viz
-      .selectAll("circle:not(.legend)")
-      .on("dblclick", this.resetMetadata);
+        // When the point is clicked a second time, we reset the metadata pane.
+        this.viz
+          .selectAll("circle:not(.legend)")
+          .on("dblclick", this.resetMetadata);
       };
 
       // The function to display the data for a scout.
@@ -522,62 +548,65 @@ export default class HearingMap extends Visualization {
         const scoutData = totaldata[1].recordings.filter((d) => {
           return d.scouts.some((s) => s.name.trim() === scout);
         });
+        console.log(scoutData);
+
         // We then display the data.
         this.viz
           .selectAll("circle:not(.legend)")
           .data(scoutData)
           .join("circle")
-          .attr("cx", (d) => this.projection([d.lon, d.lat])[0] - Math.random() * this.jitter)
-          .attr("cy", (d) => this.projection([d.lon, d.lat])[1] - Math.random() * this.jitter)
+          .attr(
+            "cx",
+            (d) =>
+              this.projection([d.lon, d.lat])[0] - Math.random() * this.jitter
+          )
+          .attr(
+            "cy",
+            (d) =>
+              this.projection([d.lon, d.lat])[1] - Math.random() * this.jitter
+          )
           .attr("r", (d) => this.radius(d.recordings))
           .attr("class", "point")
           .sort((a, b) => b.recordings - a.recordings);
-        
+
         // We reattach the tooltip.
         this.viz
-        .selectAll("circle:not(.legend)")
-        .on("mouseover", this.tooltipRender)
-        .on("mousemove", () => {
-          // Show the tooltip to the right of the mouse, unless we are
-          // on the rightmost 25% of the browser.
-          if (event.clientX / this.width >= 0.75) {
-            this.tooltip
-              .style("top", `${event.pageY - 10}px`)
-              .style(
-                "left",
-                `${
-                  event.pageX -
-                  this.tooltip.node().getBoundingClientRect().width -
-                  10
-                }px`
-              );
-          } else {
-            this.tooltip
-              .style("top", `${event.pageY - 10}px`)
-              .style("left", `${event.pageX + 10}px`);
-          }
-        })
-        .on("mouseout", () => this.tooltip.style("visibility", "hidden"));
+          .selectAll("circle:not(.legend)")
+          .on("mouseover", this.tooltipRender)
+          .on("mousemove", () => {
+            // Show the tooltip to the right of the mouse, unless we are
+            // on the rightmost 25% of the browser.
+            if (event.clientX / this.width >= 0.75) {
+              this.tooltip
+                .style("top", `${event.pageY - 10}px`)
+                .style(
+                  "left",
+                  `${
+                    event.pageX -
+                    this.tooltip.node().getBoundingClientRect().width -
+                    10
+                  }px`
+                );
+            } else {
+              this.tooltip
+                .style("top", `${event.pageY - 10}px`)
+                .style("left", `${event.pageX + 10}px`);
+            }
+          })
+          .on("mouseout", () => this.tooltip.style("visibility", "hidden"));
 
-      // When a user clicks on a point, we will update the metadata pane. 
-      this.viz
-      .selectAll("circle:not(.legend)")
-      .on("click", this.renderMetadata);
-    
-      // When a user clicks on a point, we hide the "time_span_note" span until
-      // the user resets the metadata.
-      this.viz
-      .selectAll("circle:not(.legend)")
-      .on("click", () => {
-        this.metadata
-          .select("#time_span_note")
-          .style("visibility", "hidden");
-      });
+        // When a user clicks on a point, update the metadata pane.
+        this.viz
+          .selectAll("circle:not(.legend)")
+          .on("click", () => {
+            this.renderMetadata();
+            d3.select("#time_span_note").style("visibility", "hidden");
+          });
 
-    // When the point is clicked a second time, we reset the metadata pane.
-    this.viz
-      .selectAll("circle:not(.legend)")
-      .on("dblclick", this.resetMetadata);
+        // When the point is clicked a second time, we reset the metadata pane.
+        this.viz
+          .selectAll("circle:not(.legend)")
+          .on("dblclick", this.resetMetadata);
       };
 
       // The function to display the data for a year.
@@ -595,53 +624,50 @@ export default class HearingMap extends Visualization {
           .attr("cx", (d) => this.projection([d.lon, d.lat])[0])
           .attr("cy", (d) => this.projection([d.lon, d.lat])[1])
           // if recordings are 0, the radius is set to 5.
-          .attr("r",
-            (d) => {
-              if (d.recordings === 0) {
-                return 5;
-              } else {
-                return this.radius(d.recordings);
-              }
+          .attr("r", (d) => {
+            if (d.recordings === 0) {
+              return 5;
+            } else {
+              return this.radius(d.recordings);
             }
-          )
+          })
           .attr("class", "point");
-        
+
         // We reattach the tooltip.
         this.viz
-        .selectAll("circle:not(.legend)")
-        .on("mouseover", this.tooltipRender)
-        .on("mousemove", () => {
-          // Show the tooltip to the right of the mouse, unless we are
-          // on the rightmost 25% of the browser.
-          if (event.clientX / this.width >= 0.75) {
-            this.tooltip
-              .style("top", `${event.pageY - 10}px`)
-              .style(
-                "left",
-                `${
-                  event.pageX -
-                  this.tooltip.node().getBoundingClientRect().width -
-                  10
-                }px`
-              );
-          } else {
-            this.tooltip
-              .style("top", `${event.pageY - 10}px`)
-              .style("left", `${event.pageX + 10}px`);
-          }
-        })
-        .on("mouseout", () => this.tooltip.style("visibility", "hidden"));
+          .selectAll("circle:not(.legend)")
+          .on("mouseover", this.tooltipRender)
+          .on("mousemove", () => {
+            // Show the tooltip to the right of the mouse, unless we are
+            // on the rightmost 25% of the browser.
+            if (event.clientX / this.width >= 0.75) {
+              this.tooltip
+                .style("top", `${event.pageY - 10}px`)
+                .style(
+                  "left",
+                  `${
+                    event.pageX -
+                    this.tooltip.node().getBoundingClientRect().width -
+                    10
+                  }px`
+                );
+            } else {
+              this.tooltip
+                .style("top", `${event.pageY - 10}px`)
+                .style("left", `${event.pageX + 10}px`);
+            }
+          })
+          .on("mouseout", () => this.tooltip.style("visibility", "hidden"));
 
-              // When a user clicks on a point, we will update the metadata pane. 
-      this.viz
-      .selectAll("circle:not(.legend)")
-      .on("click", this.renderMetadata);
+        // When a user clicks on a point, we will update the metadata pane.
+        this.viz
+          .selectAll("circle:not(.legend)")
+          .on("click", this.renderMetadata);
 
-
-    // When the point is clicked a second time, we reset the metadata pane.
-    this.viz
-      .selectAll("circle:not(.legend)")
-      .on("dblclick", this.resetMetadata);
+        // When the point is clicked a second time, we reset the metadata pane.
+        this.viz
+          .selectAll("circle:not(.legend)")
+          .on("dblclick", this.resetMetadata);
       };
 
       // The function to display the data for a scout and a year.
@@ -649,10 +675,11 @@ export default class HearingMap extends Visualization {
         // We filter the data for the selected scout and year.
         const scoutYearData = totaldata[1].recordings.filter((d) => {
           return (
-            d.scouts.some((s) => s.name.trim() === scout) && d.years.some((y) => y === year)
+            d.scouts.some((s) => s.name.trim() === scout) &&
+            d.years.some((y) => y === year)
           );
         });
-        
+
         // We then display the data.
         this.viz
           .selectAll("circle:not(.legend)")
@@ -663,43 +690,42 @@ export default class HearingMap extends Visualization {
           .attr("r", (d) => this.radius(d.recordings))
           .attr("class", "point")
           .sort((a, b) => b.recordings - a.recordings);
-        
+
         // We reattach the tooltip.
         this.viz
-        .selectAll("circle:not(.legend)")
-        .on("mouseover", this.tooltipRender)
-        .on("mousemove", () => {
-          // Show the tooltip to the right of the mouse, unless we are
-          // on the rightmost 25% of the browser.
-          if (event.clientX / this.width >= 0.75) {
-            this.tooltip
-              .style("top", `${event.pageY - 10}px`)
-              .style(
-                "left",
-                `${
-                  event.pageX -
-                  this.tooltip.node().getBoundingClientRect().width -
-                  10
-                }px`
-              );
-          } else {
-            this.tooltip
-              .style("top", `${event.pageY - 10}px`)
-              .style("left", `${event.pageX + 10}px`);
-          }
-        })
-        .on("mouseout", () => this.tooltip.style("visibility", "hidden"));
+          .selectAll("circle:not(.legend)")
+          .on("mouseover", this.tooltipRender)
+          .on("mousemove", () => {
+            // Show the tooltip to the right of the mouse, unless we are
+            // on the rightmost 25% of the browser.
+            if (event.clientX / this.width >= 0.75) {
+              this.tooltip
+                .style("top", `${event.pageY - 10}px`)
+                .style(
+                  "left",
+                  `${
+                    event.pageX -
+                    this.tooltip.node().getBoundingClientRect().width -
+                    10
+                  }px`
+                );
+            } else {
+              this.tooltip
+                .style("top", `${event.pageY - 10}px`)
+                .style("left", `${event.pageX + 10}px`);
+            }
+          })
+          .on("mouseout", () => this.tooltip.style("visibility", "hidden"));
 
-              // When a user clicks on a point, we will update the metadata pane. 
-      this.viz
-      .selectAll("circle:not(.legend)")
-      .on("click", this.renderMetadata);
+        // When a user clicks on a point, we will update the metadata pane.
+        this.viz
+          .selectAll("circle:not(.legend)")
+          .on("click", this.renderMetadata);
 
-
-    // When the point is clicked a second time, we reset the metadata pane.
-    this.viz
-      .selectAll("circle:not(.legend)")
-      .on("dblclick", this.resetMetadata);
+        // When the point is clicked a second time, we reset the metadata pane.
+        this.viz
+          .selectAll("circle:not(.legend)")
+          .on("dblclick", this.resetMetadata);
       };
 
       // This function handles the displaying of the data. It accepts a scout
@@ -721,50 +747,49 @@ export default class HearingMap extends Visualization {
               // if the year is 1902 and a scout is selected, display the data for that scout.
               if (year === 1902 && scout) {
                 this.displayScoutData(scout);
-            } else
+              }
               // If a scout and a year are selected, display the data for that scout
               // and year.
-              this.displayScoutYearData(scout, year);
+              else this.displayScoutYearData(scout, year);
             }
           }
         }
 
         // We reattach the tooltip.
         this.viz
-        .selectAll("circle:not(.legend)")
-        .on("mouseover", this.tooltipRender)
-        .on("mousemove", () => {
-          // Show the tooltip to the right of the mouse, unless we are
-          // on the rightmost 25% of the browser.
-          if (event.clientX / this.width >= 0.75) {
-            this.tooltip
-              .style("top", `${event.pageY - 10}px`)
-              .style(
-                "left",
-                `${
-                  event.pageX -
-                  this.tooltip.node().getBoundingClientRect().width -
-                  10
-                }px`
-              );
-          } else {
-            this.tooltip
-              .style("top", `${event.pageY - 10}px`)
-              .style("left", `${event.pageX + 10}px`);
-          }
-        })
-        .on("mouseout", () => this.tooltip.style("visibility", "hidden"));
-      
-              // When a user clicks on a point, we will update the metadata pane. 
-      this.viz
-      .selectAll("circle:not(.legend)")
-      .on("click", this.renderMetadata);
+          .selectAll("circle:not(.legend)")
+          .on("mouseover", this.tooltipRender)
+          .on("mousemove", () => {
+            // Show the tooltip to the right of the mouse, unless we are
+            // on the rightmost 25% of the browser.
+            if (event.clientX / this.width >= 0.75) {
+              this.tooltip
+                .style("top", `${event.pageY - 10}px`)
+                .style(
+                  "left",
+                  `${
+                    event.pageX -
+                    this.tooltip.node().getBoundingClientRect().width -
+                    10
+                  }px`
+                );
+            } else {
+              this.tooltip
+                .style("top", `${event.pageY - 10}px`)
+                .style("left", `${event.pageX + 10}px`);
+            }
+          })
+          .on("mouseout", () => this.tooltip.style("visibility", "hidden"));
 
+        // When a user clicks on a point, we will update the metadata pane.
+        this.viz
+          .selectAll("circle:not(.legend)")
+          .on("click", this.renderMetadata);
 
-    // When the point is clicked a second time, we reset the metadata pane.
-    this.viz
-      .selectAll("circle:not(.legend)")
-      .on("dblclick", this.resetMetadata);
+        // When the point is clicked a second time, we reset the metadata pane.
+        this.viz
+          .selectAll("circle:not(.legend)")
+          .on("dblclick", this.resetMetadata);
       };
 
       // By default, we display all the data.
@@ -775,13 +800,13 @@ export default class HearingMap extends Visualization {
       d3.select("#scouts_selection").on("change", () => {
         const currentScout = d3.select("#scouts_selection").property("value");
         const slider = d3.select("#timeline");
-        const currentYear = parseInt(slider.property("value"))
+        const currentYear = parseInt(slider.property("value"));
         this.displayData(currentScout, currentYear);
         this.resetMetadata();
       });
       d3.select("#timeline").on("change", () => {
         const slider = d3.select("#timeline");
-        const currentYear = parseInt(slider.property("value"))
+        const currentYear = parseInt(slider.property("value"));
         const currentScout = d3.select("#scouts_selection").property("value");
         this.displayData(currentScout, currentYear);
         this.resetMetadata();
@@ -821,8 +846,7 @@ export default class HearingMap extends Visualization {
         .attr("y", -this.radius.range()[1])
         .attr("dy", "2em")
         .text("Number of recordings");
-  
-      
+
       // TODO: If a user's filters return no data, display a message on the map.
       // This will be true for both scouts and years.
 
