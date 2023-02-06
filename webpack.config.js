@@ -1,6 +1,8 @@
 // Bundle the js files together into dist/main.js
 const webpack = require('webpack');
 const path = require('path');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
+const HtmlInlineScriptPlugin = require('html-inline-script-webpack-plugin');
 
 const postcss = require('postcss');
 const autoprefixer = require('autoprefixer');
@@ -18,10 +20,28 @@ module.exports = {
         path: path.resolve(__dirname, 'dist'),
         filename: 'index.js'
     },
+    module: {
+        rules: [
+            {
+                test: /\.(csv)$/,
+                loader: 'csv-loader',
+                options: {
+                    header: true
+                }
+            },
+        ],
+    },
     plugins: [
         new webpack.ProvidePlugin({
             d3: 'd3',
         }),
+        new HtmlWebpackPlugin({
+            template: 'index.html',
+            filename: 'index.html',
+            inject: 'body',
+            inlineSource: '.(js|css)$',
+        }),
+        new HtmlInlineScriptPlugin(),
     ],
 };
 

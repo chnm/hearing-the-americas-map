@@ -192,9 +192,10 @@ export default class HearingMap extends Visualization {
         }
         <br>
         Click on a point to see how many recordings were made in <br/>
-        each city and when. In some cases, there are recordings <br/>
-        available for listening. Double-click to return to <br/>
-        the totals for Latin America as a whole.`;
+        each city and when. If you see this symbol (𝇇) next <br/>
+        to the city name above, there are recordings
+        available <br/> for listening. Double-click to return to
+        the totals for<br/> Latin America as a whole.`;
       this.tooltip.html(text);
       this.tooltip.style("visibility", "visible");
     };
@@ -245,14 +246,13 @@ export default class HearingMap extends Visualization {
   }
 
   update() {
-    // Read the CSV data
-    d3.csv("./src/data/recordings.csv").then((data) => {
+    // Since we already parsed the CSV file, we can use it directly
+    const data = this.data.dataset;
+
       this.radius = d3
         .scaleSqrt()
         .domain([0, d3.max(data, (d) => d.recordings)])
         .range([0, this.maxRadius]);
-
-      // console.log(this.radius(1400));
 
       // Create a new array of objects
       const recordings = data.map((d) => {
@@ -477,8 +477,6 @@ export default class HearingMap extends Visualization {
       totaldata.push({ totalcities: Object.entries(recordingsPerCity) });
       totaldata.push({ recordings: recordings });
 
-      console.log(totaldata);
-
       // The function to display all data.
       this.displayAllData = () => {
         // We display data from `totalcities`
@@ -548,7 +546,6 @@ export default class HearingMap extends Visualization {
         const scoutData = totaldata[1].recordings.filter((d) => {
           return d.scouts.some((s) => s.name.trim() === scout);
         });
-        console.log(scoutData);
 
         // We then display the data.
         this.viz
@@ -900,6 +897,5 @@ export default class HearingMap extends Visualization {
         this.resetMetadata();
         this.displayData();
       });
-    });
   }
 }
