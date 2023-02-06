@@ -14,9 +14,9 @@ Running the local server:
 
 `npm start`
 
-Compile JS files for production: 
+Compile JS and CSS files for production, which produces a single `index.html` file in `dist/` that we can embed in an Omeka S HTML block: 
 
-`npm run build`
+`npm run compile`
 
 Watch JS files for local development: 
 
