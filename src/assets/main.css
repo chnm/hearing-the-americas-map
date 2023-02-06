@@ -29,7 +29,7 @@ label {
 /* the metadata column should be scrollable */
 .display__metadata {
   overflow-y: scroll;
-  height: 100vh;
+  max-height: 750px;
 }
 
 /* if mobile screen, make the map 100% width and push metadata below */
@@ -41,6 +41,8 @@ label {
     width: 100%;
   }
 }
+
+button#reset-timeline{margin-left: .5rem}
 
 .timeline-label {
   font-size: 1rem;
