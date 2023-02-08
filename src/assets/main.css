@@ -14,30 +14,31 @@ label {
 .viz__container {
   display: flex;
   flex-direction: row;
+  flex-wrap: wrap;
   justify-content: space-between;
 }
 
 .display__map {
   width: 75%;
-  padding-right: 1rem;
 }
 
 .display__metadata {
-  width: 25%;
-}
-
-/* the metadata column should be scrollable */
-.display__metadata {
+  width: 22%;
   overflow-y: scroll;
   max-height: 750px;
 }
 
-/* if mobile screen, make the map 100% width and push metadata below */
-@media screen and (max-width: 600px) {
-  .display__map {
+/* if mobile screen, push the metadata panel below the map */
+@media (max-width: 768px) {
+  .viz__container {
+    flex-direction: column;
+  }
+
+  .display__map{
     width: 100%;
   }
   .display__metadata {
+    padding-left:1rem;
     width: 100%;
   }
 }
