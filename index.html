@@ -5,7 +5,7 @@
     <title>Hearing the Americas</title>
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <style>
-      body{background:#f6f1e9;font-family:-apple-system,BlinkMacSystemFont,avenir next,avenir,helvetica,helvetica neue,ubuntu,roboto,noto,segoe ui,arial,sans-serif}label{display:block;margin-bottom:.5rem}.viz__container{display:flex;flex-direction:row;justify-content:space-between}.display__map{padding-right:1rem;width:75%}.display__metadata{height:100vh;overflow-y:scroll;width:25%}@media screen and (max-width:600px){.display__map,.display__metadata{width:100%}}.timeline-label{font-size:1rem}hr{border:0;border-top:1px solid #333;margin:1rem 0}#map{background:#add8e6}.country,.states{fill:transparent;stroke:transparent}.point{fill:#f2ac29;fill-opacity:.5;stroke:#000}.point:hover{fill-opacity:1}.point text.clip{fill:#fff;text-anchor:middle;font-size:.8rem;font-weight:600}.tooltip{background:hsla(218,4%,41%,.9);border-radius:.2rem;color:#fff;display:inline-block;font-size:14px;max-width:400px;padding:.2rem .4rem;position:absolute;text-overflow:ellipsis;visibility:hidden;white-space:nowrap;z-index:300}.overlay{fill:none;pointer-events:all}.timeline_container{width:80%}.float-left{float:left!important}.float-right{float:right!important}.slider{width:100%}.line{fill:none;stroke:#4682b4;stroke-width:1.5px}.axis line,.axis path{fill:none;stroke:#000;shape-rendering:crispEdges}.axis text{font-size:12px}
+      label{display:block;margin-bottom:.5rem}.viz__container{display:flex;flex-direction:row;flex-wrap:wrap;justify-content:space-between}.display__map{width:75%}.display__metadata{max-height:750px;overflow-y:scroll;width:22%}@media (max-width:768px){.viz__container{flex-direction:column}.display__map{width:100%}.display__metadata{padding-left:1rem;width:100%}}button#reset-timeline{margin-left:.5rem}.timeline-label{font-size:1rem}hr{border:0;border-top:1px solid #333;margin:1rem 0}#map{background:#add8e6}.country,.states{fill:transparent;stroke:transparent}.point{fill:#f2ac29;fill-opacity:.5;stroke:#000}.point:hover{fill-opacity:1}.point text.clip{fill:#fff;text-anchor:middle;font-size:.8rem;font-weight:600}.tooltip{background:hsla(218,4%,41%,.9);border-radius:.2rem;color:#fff;display:inline-block;font-size:14px;max-width:400px;padding:.2rem .4rem;position:absolute;text-overflow:ellipsis;visibility:hidden;white-space:nowrap;z-index:300}.tooltip__text{font-size:.8rem;}.overlay{fill:none;pointer-events:all}.timeline_container{width:80%}.float-left{float:left!important}.float-right{float:right!important}.slider{width:100%}.line{fill:none;stroke:#4682b4;stroke-width:1.5px}.axis line,.axis path{fill:none;stroke:#000;shape-rendering:crispEdges}.axis text{font-size:12px}
     </style>
   </head>
   <body>
@@ -48,13 +48,13 @@
 
         <h2 class="metadata__title"></h2>
         <p id="time_span_note">These are the recordings made in <strong><span id="body__year-range">1902-1926</span></strong>.</p>
-        <span class="metadata__panel">
-          <span class="metadata__recordings"></span>
-          <span class="metadata__scouts"></span>
-          <span class="metadata__years"></span>
-          <span class="metadata__dates"></span><br/>
-          <div class="metadata__audio"></div>
-        </span>
+        <div class="metadata__panel">
+          <div class="metadata__audio"></div><br/>
+          <div class="metadata__recordings"></div><br/>
+          <div class="metadata__scouts"></div><br/>
+          <div class="metadata__years"></div><br/>
+          <div class="metadata__dates"></div><br/>
+        </div>
       </div>
 
     </div>

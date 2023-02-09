@@ -101,6 +101,11 @@ hr {
   visibility: hidden;
 }
 
+.tooltip__text {
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
 .overlay {
   fill: none;
   pointer-events: all;

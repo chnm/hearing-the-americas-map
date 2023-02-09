@@ -81,15 +81,16 @@ export default class HearingMap extends Visualization {
       const displayYears = d.years
         ? d.years
             .map((year) => {
-              return `<br> - ${year}`;
+              return `<li> ${year}`;
             })
             .join("")
         : null;
       const displayRecordings = d.recordings;
-      const displayScouts = d.scouts
-        ? Object.keys(d.scouts)
-            .map((key) => {
-              return `<br> - ${d.scouts[key].name}`;
+      // display the scouts list 
+      const displayScouts = d.scouts_list
+        ? d.scouts_list
+            .map((scout) => {
+              return `<li> ${scout}`;
             })
             .join("")
         : null;
@@ -123,7 +124,7 @@ export default class HearingMap extends Visualization {
         d3.select(".metadata__years")
           .style("display", "block")
           .html(
-            `<strong>Years that ${cityName} was visited:</strong> ${displayYears}`
+            `<strong>Years that scouts visited ${cityName}:</strong> <ul>${displayYears}</ul>`
           );
         d3.select(".metadata__dates").style("display", "none");
       }
@@ -131,7 +132,7 @@ export default class HearingMap extends Visualization {
       // Display the scouts, if the data is not empty
       d3.select(".metadata__scouts")
         .style("display", displayScouts ? "block" : "none")
-        .html(`<strong>Scouts:</strong> ${displayScouts}`);
+        .html(`<strong>Scouts that visited ${cityName}:</strong> <ul>${displayScouts}</ul>`);
 
       // This function creates the audio player and embeds it in the metadata panel.
       // If d.omeka is not empty, it will create the player.
@@ -190,12 +191,11 @@ export default class HearingMap extends Visualization {
             ? " <span style='font-size: 18px;'>𝇇</span> "
             : ""
         }
-        <br>
-        Click on a point to see how many recordings were made in <br/>
+        <p class="tooltip__text">Click on a point to see how many recordings were made in <br/>
         each city and when. If you see this symbol (𝇇) next <br/>
         to the city name above, there are recordings
         available <br/> for listening. Double-click to return to
-        the totals for<br/> Latin America as a whole.`;
+        the totals for<br/> Latin America as a whole.</p>`;
       this.tooltip.html(text);
       this.tooltip.style("visibility", "visible");
     };
@@ -263,7 +263,8 @@ export default class HearingMap extends Visualization {
           city: d.city,
           lat: +d.lat,
           lon: +d.lon,
-          // Scouts need to be separated from their delimiter (;)
+          // Scouts need to be separated from their delimiter (;) and loop through every 
+          // scout to create an array of objects.
           scouts: d.scouts.split(";").map((s) => {
             return {
               name: s,
@@ -423,6 +424,41 @@ export default class HearingMap extends Visualization {
         }
       });
 
+      // We determine the scouts of each recording per city, which we will
+      // push to recordingsPerCity. We need to find the entire list of scouts that visited
+      // each city. We only return an array of scout names for each city. We will 
+      // record this data in a scouts_list array. We only care about their name.
+      recordings.forEach((recording) => {
+        const key = `${recording.city.trim()}`;
+        if (recordingsPerCity[key]) {
+          if (recordingsPerCity[key].scouts_list) {
+            recording.scouts.forEach((scout) => {
+              if (!recordingsPerCity[key].scouts_list.includes(scout.name)) {
+                recordingsPerCity[key].scouts_list.push(scout.name);
+              }
+            });
+          } else {
+            recordingsPerCity[key].scouts_list = [];
+            recording.scouts.forEach((scout) => {
+              if (!recordingsPerCity[key].scouts_list.includes(scout.name)) {
+                recordingsPerCity[key].scouts_list.push(scout.name);
+              }
+            });
+          }
+        }
+      });
+
+      // Strip white space from scouts_list, sort alphabetically, and return unique
+      // values.
+      Object.keys(recordingsPerCity).forEach((key) => {
+        recordingsPerCity[key].scouts_list = recordingsPerCity[
+          key
+        ].scouts_list
+          .map((scout) => scout.trim())
+          .sort()
+          .filter((scout, index, self) => self.indexOf(scout) === index);
+      });
+
       // We need to determine the years of each recording per city, which we will
       // push to recordingsPerCity. We need to find the earliest start date and the
       // latest end date for each city. We will use this to determine the range of
@@ -488,7 +524,8 @@ export default class HearingMap extends Visualization {
             lon: d[1].lon,
             recordings: d[1].recordings,
             years: d[1].years,
-            scouts: d[1].scouts,
+            scouts: d[1],
+            scouts_list: d[1].scouts_list,
             omeka: d[1].omeka,
           };
         });

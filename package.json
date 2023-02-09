@@ -5,9 +5,9 @@
   "main": "app.js",
   "scripts": {
     "start": "node app.js",
-    "watch": "webpack --watch",
+    "watch": "webpack --mode=development --watch",
     "lint": "jshint app.js assets/*.js",
-    "bundle": "./node_modules/.bin/webpack --config webpack.config.js",
+    "bundle": "./node_modules/.bin/webpack --mode=production --config webpack.config.js",
     "compile": "npm run bundle && npm run minify"
   },
   "repository": {
