@@ -2,8 +2,7 @@ import HearingMap from "./map.js";
 import dataPath from "/src/data/recordings.csv";
 
 const urls = [
-  "https://data.chnm.org/ne/northamerica/",
-  "https://data.chnm.org/ne/southamerica/",
+  "https://data.chnm.org/ne/globe?location=North+America&location=South+America",
 ];
 // const dataPath = "/src/data/recordings.csv";
 const promises = [];
@@ -23,7 +22,7 @@ Promise.all(promises)
 function setup(data) {
   const viz = new HearingMap(
     "#map",
-    { northamerica: data[0], southamerica: data[1], dataset: data[2] },
+    { geojson: data[0], dataset: data[1] },
     { width: 1000, height: 725 },
     { top: 10, right: 10, bottom: 10, left: 10 }
   );

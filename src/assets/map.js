@@ -141,7 +141,8 @@ export default class HearingMap extends Visualization {
         if (!d.omeka) {
           d3.select(".metadata__audio").style("display", "none");
         } else {
-          d3.select(".metadata__audio").style("display", "block").html(`
+          d3.select(".metadata__audio").style("display", "block")
+          .html(`<h3>Sample recordings</h3><br/>
               <audio controls><source src="${d.recordings_url}" type="audio/mpeg"></audio><br/>
               ${d.omeka_creator}, "<a href="${d.omeka_item_url}">${d.omeka_title}</a>" (${d.omeka_item_year}).`);
         }
@@ -162,7 +163,8 @@ export default class HearingMap extends Visualization {
       if (!d.omeka) {
         d3.select(".metadata__audio").style("display", "none");
       } else {
-        d3.select(".metadata__audio").style("display", "block").html(`
+        d3.select(".metadata__audio").style("display", "block")
+        .html(`<h3>Sample recordings</h3><br/>
             ${d.omeka
               .map((clip) => {
                 return `
@@ -204,15 +206,7 @@ export default class HearingMap extends Visualization {
   render() {
     this.viz
       .append("path")
-      .datum(this.data.northamerica)
-      .attr("d", this.path)
-      .attr("fill", "#F0F0F4")
-      .attr("stroke", "transparent")
-      .attr("stroke-width", 0.5);
-
-    this.viz
-      .append("path")
-      .datum(this.data.southamerica)
+      .datum(this.data.geojson)
       .attr("d", this.path)
       .attr("fill", "#F0F0F4")
       .attr("stroke", "transparent")
@@ -221,15 +215,7 @@ export default class HearingMap extends Visualization {
     // Draw the map features
     this.viz
       .selectAll("path")
-      .data(this.data.northamerica.features)
-      .enter()
-      .append("path")
-      .attr("d", this.path)
-      .attr("class", "country");
-
-    this.viz
-      .selectAll("path")
-      .data(this.data.southamerica.features)
+      .data(this.data.geojson.features)
       .enter()
       .append("path")
       .attr("d", this.path)
